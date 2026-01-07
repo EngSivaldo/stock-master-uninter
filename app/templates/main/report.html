@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="bi bi-file-earmark-text"></i> Relatório de Movimentações</h2>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Produto</th>
+                        <th>Tipo</th>
+                        <th>Quantidade</th>
+                        <th>Responsável</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in movements %}
+                    <tr>
+                        <td>{{ m.date.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ m.product.name }}</td>
+                        <td>
+                            {% if m.type == 'IN' %}
+                                <span class="badge bg-success">ENTRADA</span>
+                            {% else %}
+                                <span class="badge bg-danger">SAÍDA</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ m.quantity }}</td>
+                        <td>{{ m.user.username }}</td> </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">Nenhuma movimentação registrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
