@@ -1,69 +1,145 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Estoque Atual</h2>
-    <div>
-        {% if current_user.role == 'admin' %}
-        <a href="{{ url_for('inventory.add_product') }}" class="btn btn-success me-2">
-            <i class="bi bi-plus-circle"></i> + Novo Produto
-        </a>
-        {% endif %}
-        
-        <a href="{{ url_for('inventory.new_movement') }}" class="btn btn-primary">
-            <i class="bi bi-arrow-left-right"></i> Movimentar
-        </a>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card kpi-card shadow-sm h-100 border-0">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label mb-1 text-uppercase text-muted fw-bold" style="font-size: 0.75rem;">Total de Itens</div>
+                        <div class="kpi-value display-6 fw-bold text-dark">{{ products|length }}</div>
+                    </div>
+                    <div class="p-3 bg-primary bg-opacity-10 rounded-circle text-primary">
+                        <i class="bi bi-box-seam fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card kpi-card shadow-sm h-100 border-0" style="border-left: 4px solid #10b981;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label mb-1 text-uppercase text-muted fw-bold" style="font-size: 0.75rem;">Status do Sistema</div>
+                        <div class="kpi-value fs-5 fw-bold text-success mt-2">Operacional</div>
+                    </div>
+                    <div class="p-3 bg-success bg-opacity-10 rounded-circle text-success">
+                        <i class="bi bi-check-lg fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card kpi-card shadow-sm h-100 border-0" style="border-left: 4px solid #f59e0b;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-label mb-2 text-uppercase text-muted fw-bold" style="font-size: 0.75rem;">Atalhos</div>
+                        <a href="{{ url_for('inventory.new_movement') }}" class="btn btn-sm btn-outline-dark rounded-pill px-3">
+                            <i class="bi bi-arrow-left-right me-1"></i> Movimentar
+                        </a>
+                    </div>
+                    <div class="p-3 bg-warning bg-opacity-10 rounded-circle text-warning">
+                        <i class="bi bi-lightning-charge fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <table class="table table-striped table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>SKU</th>
-                    <th>Produto</th>
-                    <th>Fornecedor</th>
-                    <th>Qtd</th>
-                    <th>Preço</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in products %}
-                <tr>
-                    <td>{{ p.id }}</td>
-                    <td>{{ p.sku }}</td>
-                    <td>{{ p.name }}</td>
-                    <td>{{ p.supplier.name }}</td>
-                    <td>
-                        <span class="badge {% if p.quantity <= p.min_level %}bg-danger{% else %}bg-success{% endif %}">
-                            {{ p.quantity }}
-                        </span>
-                    </td>
-                    <td>R$ {{ p.price }}</td>
-                    <td>
-                        <div class="btn-group" role="group">
-                            <a href="{{ url_for('inventory.product_details', id=p.id) }}" class="btn btn-sm btn-info text-white" title="Ver Ficha Kardex">
-                                <i class="bi bi-eye"></i>
-                            </a>
+<div class="d-flex justify-content-between align-items-end mb-3">
+    <div>
+        <h4 class="fw-bold text-dark mb-0">Estoque Atual</h4>
+        <p class="text-muted small mb-0">Gerencie todos os produtos cadastrados.</p>
+    </div>
+    
+    {% if current_user.role == 'admin' %}
+    <a href="{{ url_for('inventory.add_product') }}" class="btn btn-primary shadow-sm">
+        <i class="bi bi-plus-lg me-2"></i>Novo Produto
+    </a>
+    {% endif %}
+</div>
 
-                            {% if current_user.role == 'admin' %}
-                            <a href="{{ url_for('inventory.edit_product', id=p.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
-                                <i class="bi bi-pencil"></i>
-                            </a>
+<div class="card shadow-sm border-0 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 text-uppercase text-muted small fw-bold border-0">Produto / SKU</th>
+                        <th class="py-3 text-uppercase text-muted small fw-bold border-0">Fornecedor</th>
+                        <th class="py-3 text-uppercase text-muted small fw-bold border-0 text-center">Status</th>
+                        <th class="py-3 text-uppercase text-muted small fw-bold border-0 text-end">Preço Venda</th>
+                        <th class="pe-4 py-3 text-uppercase text-muted small fw-bold border-0 text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                    <tr>
+                        <td class="ps-4 py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded p-2 me-3 text-secondary">
+                                    <i class="bi bi-box fs-5"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ p.name }}</div>
+                                    <div class="small text-muted font-monospace"><i class="bi bi-upc me-1"></i>{{ p.sku }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td class="text-secondary fw-medium">
+                            {{ p.supplier.name }}
+                        </td>
+
+                        <td class="text-center">
+                            {% if p.quantity <= p.min_level %}
+                                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-2">
+                                    {{ p.quantity }} un
+                                </span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-10 px-3 py-2">
+                                    {{ p.quantity }} un
+                                </span>
                             {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="7" class="text-center text-muted py-4">Nenhum produto cadastrado.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </td>
+
+                        <td class="text-end fw-bold text-dark">
+                            R$ {{ "%.2f"|format(p.price) }}
+                        </td>
+
+                        <td class="pe-4 text-end">
+                            <div class="btn-group shadow-sm" role="group">
+                                <a href="{{ url_for('inventory.product_details', id=p.id) }}" class="btn btn-sm btn-light border" title="Ver Detalhes">
+                                    <i class="bi bi-eye text-primary"></i>
+                                </a>
+
+                                {% if current_user.role == 'admin' %}
+                                <a href="{{ url_for('inventory.edit_product', id=p.id) }}" class="btn btn-sm btn-light border" title="Editar">
+                                    <i class="bi bi-pencil text-dark"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
+                            Nenhum produto encontrado no estoque.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -1,60 +1,45 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">
-                    {% if product %}
-                        Editar Produto: {{ product.name }}
-                    {% else %}
-                        Cadastrar Novo Produto
-                    {% endif %}
-                </h4>
-            </div>
-            <div class="card-body">
-                <form method="POST">
-                    
-                    {% if not product %}
-                    <div class="card bg-light mb-4 border-0">
-                        <div class="card-body">
-                            <label class="form-label fw-bold">Como deseja gerar o código (SKU)?</label>
-                            <div class="mb-3">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="sku_mode" id="modeBarcode" value="barcode" checked onchange="toggleSkuMode()">
-                                    <label class="form-check-label" for="modeBarcode">Código de Barras</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="sku_mode" id="modeSmart" value="smart" onchange="toggleSkuMode()">
-                                    <label class="form-check-label" for="modeSmart">Smart SKU</label>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-upc"></i></span>
-                                <input type="text" id="skuInput" name="sku" class="form-control" placeholder="Código..." required>
-                            </div>
-                            <div class="form-text" id="skuHelp">Use o leitor ou digite.</div>
+<div class="container-fluid px-0">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('inventory.index') }}" class="text-decoration-none">Estoque</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {{ 'Edição' if product else 'Cadastro' }}
+                    </li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold text-dark mb-0">
+                {{ 'Editar Produto' if product else 'Novo Produto' }}
+            </h2>
+        </div>
+    </div>
+
+    <form method="POST">
+        <div class="row g-4">
+            
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-tag me-2 text-primary"></i>Dados de Identificação</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase text-muted small fw-bold">Nome do Item</label>
+                            <input type="text" id="nameInput" name="name" class="form-control form-control-lg fw-bold" 
+                                   placeholder="Ex: Cimento CP II 50kg"
+                                   value="{{ product.name if product else '' }}" required onkeyup="updateSmartSku()">
                         </div>
-                    </div>
-                    {% else %}
-                    <div class="mb-3">
-                        <label class="form-label text-muted">SKU (Não editável)</label>
-                        <input type="text" class="form-control bg-light" value="{{ product.sku }}" disabled>
-                    </div>
-                    {% endif %}
 
-                    <div class="mb-3">
-                        <label class="form-label">Nome do Produto</label>
-                        <input type="text" id="nameInput" name="name" class="form-control" 
-                               value="{{ product.name if product else '' }}" required onkeyup="updateSmartSku()">
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Fornecedor</label>
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase text-muted small fw-bold">Fornecedor Principal</label>
                             <select name="supplier_id" id="supplierInput" class="form-select" required onchange="updateSmartSku()">
-                                <option value="">Selecione...</option>
+                                <option value="">Selecione o parceiro...</option>
                                 {% for s in suppliers %}
                                 <option value="{{ s.id }}" data-name="{{ s.name }}" 
                                     {% if product and product.supplier_id == s.id %}selected{% endif %}>
@@ -63,42 +48,113 @@
                                 {% endfor %}
                             </select>
                         </div>
+
+                        <div class="bg-light p-4 rounded-3 border">
+                            {% if not product %}
+                                <label class="form-label text-uppercase text-muted small fw-bold mb-3">Definição de Código (SKU)</label>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <input type="radio" class="btn-check" name="sku_mode" id="modeBarcode" value="barcode" checked onchange="toggleSkuMode()">
+                                        <label class="btn btn-outline-secondary w-100 text-start p-3 border-2 h-100" for="modeBarcode">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-upc-scan fs-3 me-3"></i>
+                                                <div>
+                                                    <div class="fw-bold">Código de Barras</div>
+                                                    <div class="small text-muted" style="font-size: 0.75rem;">Digitar ou usar leitor EAN</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="radio" class="btn-check" name="sku_mode" id="modeSmart" value="smart" onchange="toggleSkuMode()">
+                                        <label class="btn btn-outline-primary w-100 text-start p-3 border-2 h-100" for="modeSmart">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-magic fs-3 me-3"></i>
+                                                <div>
+                                                    <div class="fw-bold">Smart SKU</div>
+                                                    <div class="small" style="font-size: 0.75rem;">Gerar automaticamente</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-upc"></i></span>
+                                    <input type="text" id="skuInput" name="sku" class="form-control border-start-0 ps-0" placeholder="Aguardando dados..." required>
+                                </div>
+                                <div class="form-text mt-2" id="skuHelp">Selecione o modo acima.</div>
+                            
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <label class="form-label text-uppercase text-muted small fw-bold">SKU (Registrado)</label>
+                                        <div class="fs-5 fw-bold font-monospace text-dark">{{ product.sku }}</div>
+                                    </div>
+                                    <i class="bi bi-lock-fill text-muted fs-4" title="O SKU não pode ser alterado após a criação"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-currency-dollar me-2 text-success"></i>Financeiro & Estoque</h6>
+                    </div>
+                    <div class="card-body p-4">
                         
-                        <div class="col-md-3">
-                            <label class="form-label">Preço Custo (R$)</label>
-                            <input type="number" name="cost" step="0.01" class="form-control" 
-                                   value="{{ product.cost if product else '' }}" required>
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase text-muted small fw-bold">Preço de Custo</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted">R$</span>
+                                <input type="number" name="cost" step="0.01" class="form-control" placeholder="0.00"
+                                       value="{{ product.cost if product else '' }}" required>
+                            </div>
                         </div>
 
-                        <div class="col-md-3">
-                            <label class="form-label">Preço Venda (R$)</label>
-                            <input type="number" name="price" step="0.01" class="form-control" 
-                                   value="{{ product.price if product else '' }}" required>
+                        <div class="mb-4">
+                            <label class="form-label text-uppercase text-muted small fw-bold">Preço de Venda</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted">R$</span>
+                                <input type="number" name="price" step="0.01" class="form-control fw-bold text-success" placeholder="0.00"
+                                       value="{{ product.price if product else '' }}" required>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-4">
-                        <label class="form-label">Estoque Mínimo</label>
-                        <input type="number" name="min_level" class="form-control" 
-                               value="{{ product.min_level if product else '5' }}" required>
-                    </div>
+                        <hr class="my-4">
 
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            {{ 'Atualizar Dados' if product else 'Salvar Produto' }}
-                        </button>
-                        <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label text-uppercase text-muted small fw-bold">Ponto de Pedido</label>
+                                <i class="bi bi-info-circle text-muted" title="Quantidade mínima antes de alertar reposição"></i>
+                            </div>
+                            <input type="number" name="min_level" class="form-control" 
+                                   value="{{ product.min_level if product else '5' }}" required>
+                            <div class="form-text small">Alerta quando o estoque for menor que isso.</div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                                <i class="bi bi-check-circle me-2"></i>{{ 'Salvar Alterações' if product else 'Cadastrar Produto' }}
+                            </button>
+                            <a href="{{ url_for('inventory.index') }}" class="btn btn-light text-muted">Cancelar</a>
+                        </div>
+
                     </div>
-                </form>
+                </div>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 
 <script>
     function toggleSkuMode() {
         const modeSmart = document.getElementById('modeSmart');
-        if(!modeSmart) return; // Se não existir (modo edição), aborta
+        if(!modeSmart) return; 
         
         const isSmart = modeSmart.checked;
         const skuInput = document.getElementById('skuInput');
@@ -107,12 +163,12 @@
         if (isSmart) {
             skuInput.setAttribute('readonly', true);
             skuInput.classList.add('bg-light');
-            skuInput.placeholder = "Automático...";
+            skuInput.placeholder = "O código será gerado automaticamente...";
             updateSmartSku();
         } else {
             skuInput.removeAttribute('readonly');
             skuInput.classList.remove('bg-light');
-            skuInput.placeholder = "Escaneie ou digite...";
+            skuInput.placeholder = "Escaneie ou digite o código EAN...";
             skuInput.focus();
         }
     }

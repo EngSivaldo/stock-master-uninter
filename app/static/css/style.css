@@ -1,0 +1,171 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+:root {
+  --primary-color: #4f46e5; /* Índigo Moderno */
+  --secondary-color: #64748b;
+  --sidebar-bg: #111827; /* Quase preto (Slate 900) */
+  --sidebar-hover: #1f2937;
+  --bg-body: #f3f4f6;
+  --card-border: rgba(0, 0, 0, 0.03);
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: var(--bg-body);
+  color: #374151;
+  overflow-x: hidden;
+}
+
+/* --- SIDEBAR (O segredo do visual Pro) --- */
+.sidebar {
+  min-height: 100vh;
+  width: 260px;
+  background-color: var(--sidebar-bg);
+  color: #fff;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  transition: all 0.3s;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-brand {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.nav-link {
+  color: #9ca3af !important; /* Cinza claro */
+  padding: 12px 20px;
+  margin: 4px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.nav-link i {
+  margin-right: 12px;
+  font-size: 1.1rem;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background-color: var(--primary-color);
+  color: #fff !important;
+  transform: translateX(4px);
+}
+
+.nav-link.text-danger:hover {
+  background-color: #ef4444; /* Vermelho */
+}
+
+/* --- CONTEÚDO PRINCIPAL --- */
+.main-content {
+  margin-left: 260px; /* Mesma largura da sidebar */
+  padding: 30px;
+  min-height: 100vh;
+}
+
+/* --- CARDS MODERNOS --- */
+.card {
+  border: 1px solid var(--card-border);
+  border-radius: 16px; /* Bem arredondado */
+  background: #fff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid var(--card-border);
+  padding: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* --- BADGES E BOTÕES --- */
+.badge {
+  padding: 0.5em 0.8em;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.btn {
+  border-radius: 10px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 500;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: #4338ca;
+}
+
+/* KPI CARDS (Pequenos cartões de resumo) */
+.kpi-card {
+  border-left: 4px solid var(--primary-color);
+}
+.kpi-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #111827;
+}
+.kpi-label {
+  font-size: 0.85rem;
+  color: var(--secondary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- TELA DE LOGIN --- */
+.login-page {
+  background: linear-gradient(
+    135deg,
+    #4f46e5 0%,
+    #0ea5e9 100%
+  ); /* Degradê Azul Moderno */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-icon {
+  width: 60px;
+  height: 60px;
+  background-color: rgba(79, 70, 229, 0.1);
+  color: var(--primary-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 1.5rem auto;
+}
