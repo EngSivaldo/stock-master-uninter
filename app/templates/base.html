@@ -48,6 +48,11 @@
                         <i class="bi bi-plus-square"></i> Novo Produto
                     </a>
                 </li>
+                <li>
+                    <a href="{{ url_for('auth.users_list') }}" class="nav-link {% if request.endpoint == 'auth.users_list' %}active{% endif %}">
+                        <i class="bi bi-people-fill"></i> Gerenciar Usuários
+                    </a>
+                </li>
                 {% endif %}
             </ul>
         </div>
