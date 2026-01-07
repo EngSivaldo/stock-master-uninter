@@ -26,7 +26,7 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="kpi-label mb-1 text-uppercase text-muted fw-bold" style="font-size: 0.75rem;">Total de Itens</div>
-                        <div class="kpi-value display-6 fw-bold text-dark">{{ products|length }}</div>
+                        <div class="kpi-value display-6 fw-bold text-dark">{{ products.total }}</div>
                     </div>
                     <div class="p-3 bg-primary bg-opacity-10 rounded-circle text-primary">
                         <i class="bi bi-box-seam fs-4"></i>
@@ -71,6 +71,33 @@
     </div>
 </div>
 
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <form action="{{ url_for('inventory.index') }}" method="GET" class="d-flex gap-2">
+            <div class="input-group shadow-sm">
+                <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="q" id="liveSearchInput" class="form-control border-start-0 ps-0" 
+                       placeholder="Buscar e Enter (Servidor) ou digite (Filtro local)..." 
+                       value="{{ search_query }}" autocomplete="off">
+                
+                {% if search_query %}
+                <a href="{{ url_for('inventory.index') }}" class="btn btn-light border text-muted" title="Limpar Busca">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+                {% endif %}
+            </div>
+            <button type="submit" class="d-none"></button> 
+        </form>
+    </div>
+    
+    <div class="col-md-6 text-end text-muted small">
+        Página <strong>{{ products.page }}</strong> de <strong>{{ products.pages }}</strong> 
+        (Total: {{ products.total }})
+    </div>
+</div>
+
 <div class="card shadow-sm border-0 overflow-hidden">
     <div class="card-header bg-white py-3 border-0">
         <h6 class="fw-bold mb-0 text-dark">Listagem de Produtos</h6>
@@ -88,7 +115,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for p in products %}
+                    {% for p in products.items %}
                     <tr>
                         <td class="ps-4 py-3">
                             <div class="d-flex align-items-center">
@@ -101,37 +128,20 @@
                                 </div>
                             </div>
                         </td>
-                        
-                        <td class="text-secondary fw-medium">
-                            {{ p.supplier.name }}
-                        </td>
-
+                        <td class="text-secondary fw-medium">{{ p.supplier.name }}</td>
                         <td class="text-center">
                             {% if p.quantity <= p.min_level %}
-                                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-2">
-                                    {{ p.quantity }} un
-                                </span>
+                                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-2">{{ p.quantity }} un</span>
                             {% else %}
-                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-10 px-3 py-2">
-                                    {{ p.quantity }} un
-                                </span>
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-10 px-3 py-2">{{ p.quantity }} un</span>
                             {% endif %}
                         </td>
-
-                        <td class="text-end fw-bold text-dark">
-                            R$ {{ "%.2f"|format(p.price) }}
-                        </td>
-
+                        <td class="text-end fw-bold text-dark">R$ {{ "%.2f"|format(p.price) }}</td>
                         <td class="pe-4 text-end">
                             <div class="btn-group shadow-sm" role="group">
-                                <a href="{{ url_for('inventory.product_details', id=p.id) }}" class="btn btn-sm btn-light border" title="Ver Detalhes">
-                                    <i class="bi bi-eye text-primary"></i>
-                                </a>
-
+                                <a href="{{ url_for('inventory.product_details', id=p.id) }}" class="btn btn-sm btn-light border"><i class="bi bi-eye text-primary"></i></a>
                                 {% if current_user.role == 'admin' %}
-                                <a href="{{ url_for('inventory.edit_product', id=p.id) }}" class="btn btn-sm btn-light border" title="Editar">
-                                    <i class="bi bi-pencil text-dark"></i>
-                                </a>
+                                <a href="{{ url_for('inventory.edit_product', id=p.id) }}" class="btn btn-sm btn-light border"><i class="bi bi-pencil text-dark"></i></a>
                                 {% endif %}
                             </div>
                         </td>
@@ -140,7 +150,7 @@
                     <tr>
                         <td colspan="5" class="text-center py-5 text-muted">
                             <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
-                            Nenhum produto cadastrado.
+                            Nenhum produto encontrado.
                         </td>
                     </tr>
                     {% endfor %}
@@ -148,5 +158,53 @@
             </table>
         </div>
     </div>
+    
+    <div class="card-footer bg-white py-3">
+        <nav aria-label="Navegação de página">
+            <ul class="pagination pagination-sm justify-content-center mb-0">
+                <li class="page-item {% if not products.has_prev %}disabled{% endif %}">
+                    <a class="page-link border-0" href="{{ url_for('inventory.index', page=products.prev_num, q=search_query) }}">
+                        &laquo; Anterior
+                    </a>
+                </li>
+
+                {% for page_num in products.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == products.page %}active{% endif %}">
+                            <a class="page-link border-0" href="{{ url_for('inventory.index', page=page_num, q=search_query) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                <li class="page-item {% if not products.has_next %}disabled{% endif %}">
+                    <a class="page-link border-0" href="{{ url_for('inventory.index', page=products.next_num, q=search_query) }}">
+                        Próximo &raquo;
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Mantemos o Live Search como um "Filtro Rápido" para a página atual
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('liveSearchInput');
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const term = searchInput.value.toLowerCase();
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(term) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}

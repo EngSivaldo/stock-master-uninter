@@ -10,12 +10,31 @@ inventory_bp = Blueprint('inventory', __name__)
 @inventory_bp.route('/')
 @login_required
 def index():
-    # Se ainda não tivermos templates, vamos retornar texto simples para testar
-    products = Product.query.all()
-    formatted_date = datetime.now().strftime('%d/%m/%Y')
-    return render_template('inventory/index.html', products=products, now=formatted_date)
+    # 1. Captura termo de busca e número da página da URL
+    search_query = request.args.get('q', '')
+    page = request.args.get('page', 1, type=int) # Padrão é página 1
+    per_page = 10 # Produtos por página (mude para testar, ex: 2)
+    
+    # 2. Monta a Query BASE (sem executar ainda)
+    query = Product.query
 
-# ... (mantenha os imports lá em cima)
+    # 3. Aplica filtro de busca se existir
+    if search_query:
+        query = query.filter(
+            (Product.name.contains(search_query)) | 
+            (Product.sku.contains(search_query))
+        )
+    
+    # 4. A MÁGICA: .paginate() em vez de .all()
+    # Isso executa a query no banco com LIMIT e OFFSET automaticamente
+    products_pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    formatted_date = datetime.now().strftime('%d/%m/%Y')
+    
+    return render_template('inventory/index.html', 
+                         products=products_pagination, # Passamos o objeto paginador
+                         now=formatted_date,
+                         search_query=search_query)
 
 @inventory_bp.route('/movement/new', methods=['GET', 'POST'])
 @login_required
