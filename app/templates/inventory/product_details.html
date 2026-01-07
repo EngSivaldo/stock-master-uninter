@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Ficha do Produto</h2>
+        <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">Voltar</a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">{{ product.name }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>SKU:</strong> <br> {{ product.sku }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Fornecedor:</strong> <br> {{ product.supplier.name }}
+                </div>
+                <div class="col-md-2">
+                    <strong>Custo:</strong> <br> R$ {{ product.cost }}
+                </div>
+                <div class="col-md-2">
+                    <strong>Preço Venda:</strong> <br> R$ {{ product.price }}
+                </div>
+                <div class="col-md-2">
+                    <strong>Saldo Atual:</strong> <br> 
+                    <span class="badge bg-primary fs-6">{{ product.quantity }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Histórico de Movimentações</h4>
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Tipo</th>
+                        <th>Quantidade</th>
+                        <th>Saldo Após (Simulado)</th> <th>Usuário Responsável</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in movements %}
+                    <tr>
+                        <td>{{ m.date.strftime('%d/%m/%Y às %H:%M') }}</td>
+                        <td>
+                            {% if m.type == 'IN' %}
+                                <span class="badge bg-success">ENTRADA</span>
+                            {% else %}
+                                <span class="badge bg-danger">SAÍDA</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ m.quantity }}</td>
+                        <td class="text-muted">-</td>
+                        <td>
+                            <i class="bi bi-person-fill"></i> {{ m.user.username }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">Este produto nunca foi movimentado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

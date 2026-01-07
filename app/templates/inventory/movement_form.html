@@ -1,28 +1,92 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Nova Movimentação</h2>
-<form method="POST">
-    <div class="mb-3">
-        <label>Produto</label>
-        <select name="product_id" class="form-select" required>
-            <option value="">Selecione...</option>
-            {% for p in products %}
-            <option value="{{ p.id }}">{{ p.name }} (Qtd: {{ p.quantity }})</option>
-            {% endfor %}
-        </select>
+<div class="row">
+    <div class="col-md-5">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-arrow-left-right"></i> Registrar Movimento</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Selecione o Produto</label>
+                        <select name="product_id" class="form-select" required>
+                            <option value="">Escolha...</option>
+                            {% for p in products %}
+                            <option value="{{ p.id }}">{{ p.sku }} - {{ p.name }} (Saldo: {{ p.quantity }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo de Operação</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="type" id="in" value="IN" autocomplete="off" checked>
+                                <label class="btn btn-outline-success" for="in"><i class="bi bi-arrow-down"></i> Entrada</label>
+                            
+                                <input type="radio" class="btn-check" name="type" id="out" value="OUT" autocomplete="off">
+                                <label class="btn btn-outline-danger" for="out"><i class="bi bi-arrow-up"></i> Saída</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Quantidade</label>
+                            <input type="number" name="quantity" class="form-control" min="1" placeholder="0" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">Confirmar Transação</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label>Tipo</label>
-        <select name="type" class="form-select" required>
-            <option value="IN">Entrada (IN)</option>
-            <option value="OUT">Saída (OUT)</option>
-        </select>
+
+    <div class="col-md-7">
+        <div class="card shadow border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 text-muted"><i class="bi bi-clock-history"></i> Últimas Movimentações</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="table-dark small">
+                        <tr>
+                            <th>Horário</th>
+                            <th>Produto</th>
+                            <th>Operação</th>
+                            <th>Usuário</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in movements %}
+                        <tr>
+                            <td class="small align-middle">{{ m.date.strftime('%H:%M - %d/%m') }}</td>
+                            <td class="align-middle fw-bold">{{ m.product.name }}</td>
+                            <td class="align-middle">
+                                {% if m.type == 'IN' %}
+                                    <span class="badge bg-success bg-opacity-75"><i class="bi bi-plus"></i> {{ m.quantity }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-75"><i class="bi bi-dash"></i> {{ m.quantity }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="small align-middle text-muted">
+                                <i class="bi bi-person"></i> {{ m.user.username }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">Nenhuma movimentação recente.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer text-center bg-white">
+                <a href="{{ url_for('main.report') }}" class="btn btn-sm btn-link text-decoration-none">Ver histórico completo</a>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label>Quantidade</label>
-        <input type="number" name="quantity" class="form-control" min="1" required>
-    </div>
-    <button type="submit" class="btn btn-success">Confirmar</button>
-</form>
+</div>
 {% endblock %}

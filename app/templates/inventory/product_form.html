@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    {% if product %}
+                        Editar Produto: {{ product.name }}
+                    {% else %}
+                        Cadastrar Novo Produto
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    
+                    {% if not product %}
+                    <div class="card bg-light mb-4 border-0">
+                        <div class="card-body">
+                            <label class="form-label fw-bold">Como deseja gerar o código (SKU)?</label>
+                            <div class="mb-3">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="sku_mode" id="modeBarcode" value="barcode" checked onchange="toggleSkuMode()">
+                                    <label class="form-check-label" for="modeBarcode">Código de Barras</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="sku_mode" id="modeSmart" value="smart" onchange="toggleSkuMode()">
+                                    <label class="form-check-label" for="modeSmart">Smart SKU</label>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-upc"></i></span>
+                                <input type="text" id="skuInput" name="sku" class="form-control" placeholder="Código..." required>
+                            </div>
+                            <div class="form-text" id="skuHelp">Use o leitor ou digite.</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">SKU (Não editável)</label>
+                        <input type="text" class="form-control bg-light" value="{{ product.sku }}" disabled>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Produto</label>
+                        <input type="text" id="nameInput" name="name" class="form-control" 
+                               value="{{ product.name if product else '' }}" required onkeyup="updateSmartSku()">
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Fornecedor</label>
+                            <select name="supplier_id" id="supplierInput" class="form-select" required onchange="updateSmartSku()">
+                                <option value="">Selecione...</option>
+                                {% for s in suppliers %}
+                                <option value="{{ s.id }}" data-name="{{ s.name }}" 
+                                    {% if product and product.supplier_id == s.id %}selected{% endif %}>
+                                    {{ s.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Preço Custo (R$)</label>
+                            <input type="number" name="cost" step="0.01" class="form-control" 
+                                   value="{{ product.cost if product else '' }}" required>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Preço Venda (R$)</label>
+                            <input type="number" name="price" step="0.01" class="form-control" 
+                                   value="{{ product.price if product else '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Estoque Mínimo</label>
+                        <input type="number" name="min_level" class="form-control" 
+                               value="{{ product.min_level if product else '5' }}" required>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            {{ 'Atualizar Dados' if product else 'Salvar Produto' }}
+                        </button>
+                        <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSkuMode() {
+        const modeSmart = document.getElementById('modeSmart');
+        if(!modeSmart) return; // Se não existir (modo edição), aborta
+        
+        const isSmart = modeSmart.checked;
+        const skuInput = document.getElementById('skuInput');
+        const skuHelp = document.getElementById('skuHelp');
+
+        if (isSmart) {
+            skuInput.setAttribute('readonly', true);
+            skuInput.classList.add('bg-light');
+            skuInput.placeholder = "Automático...";
+            updateSmartSku();
+        } else {
+            skuInput.removeAttribute('readonly');
+            skuInput.classList.remove('bg-light');
+            skuInput.placeholder = "Escaneie ou digite...";
+            skuInput.focus();
+        }
+    }
+
+    function updateSmartSku() {
+        const modeSmart = document.getElementById('modeSmart');
+        if (!modeSmart || !modeSmart.checked) return;
+
+        const name = document.getElementById('nameInput').value;
+        const supplierSelect = document.getElementById('supplierInput');
+        
+        let supplierName = "";
+        if (supplierSelect.selectedIndex > 0) {
+            supplierName = supplierSelect.options[supplierSelect.selectedIndex].getAttribute('data-name');
+        }
+
+        if (!name || !supplierName) return;
+
+        const prodPrefix = name.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, "X");
+        const suppPrefix = supplierName.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, "X");
+        const randomSuffix = Math.floor(100 + Math.random() * 900); 
+
+        document.getElementById('skuInput').value = `${prodPrefix}-${suppPrefix}-${randomSuffix}`;
+    }
+</script>
+{% endblock %}

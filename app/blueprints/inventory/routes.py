@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app.models import Product, Movement, Supplier
 from app.extensions import db
+from app.decorators import admin_required
 
 inventory_bp = Blueprint('inventory', __name__)
 
@@ -12,20 +13,27 @@ def index():
     products = Product.query.all()
     return render_template('inventory/index.html', products=products)
 
+# ... (mantenha os imports lá em cima)
+
 @inventory_bp.route('/movement/new', methods=['GET', 'POST'])
 @login_required
 def new_movement():
     products = Product.query.all()
     
+    # --- MELHORIA SÊNIOR: Buscando o histórico recente ---
+    # Pegamos as últimas 10 movimentações para exibir na tela (Feedback visual)
+    recent_movements = Movement.query.order_by(Movement.date.desc()).limit(10).all()
+    # -----------------------------------------------------
+
     if request.method == 'POST':
         product_id = request.form.get('product_id')
-        mov_type = request.form.get('type')
+        mov_type = request.form.get('type') # 'IN' ou 'OUT'
         quantity = int(request.form.get('quantity'))
         
         product = Product.query.get(product_id)
         
         if not product:
-            flash('Produto não encontrado.')
+            flash('Produto não encontrado.', 'danger')
             return redirect(url_for('inventory.new_movement'))
 
         try:
@@ -33,19 +41,124 @@ def new_movement():
                 if product.quantity < quantity:
                     flash(f'Erro: Saldo insuficiente! Estoque atual: {product.quantity}', 'danger')
                     return redirect(url_for('inventory.new_movement'))
+                
                 product.quantity -= quantity
+                
             elif mov_type == 'IN':
                 product.quantity += quantity
             
-            movement = Movement(type=mov_type, quantity=quantity, product_id=product.id, user_id=current_user.id)
+            # Registra quem fez (current_user.id) e quando (data automática do banco)
+            movement = Movement(
+                type=mov_type, 
+                quantity=quantity, 
+                product_id=product.id,
+                user_id=current_user.id
+            )
             
             db.session.add(movement)
             db.session.commit()
             flash('Movimentação realizada com sucesso!', 'success')
-            return redirect(url_for('inventory.index'))
+            
+            # Mantemos na mesma tela para facilitar lançamentos contínuos
+            return redirect(url_for('inventory.new_movement'))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Erro ao processar: {str(e)}', 'danger')
+            flash(f'Erro ao processar movimentação: {str(e)}', 'danger')
             
-    return render_template('inventory/movement_form.html', products=products)
+    # Passamos a lista 'recent_movements' para o HTML
+    return render_template('inventory/movement_form.html', products=products, movements=recent_movements)
+
+
+
+@inventory_bp.route('/product/new', methods=['GET', 'POST'])
+@login_required
+@admin_required   # <--- BLOQUEIA OPERADORES AQUI
+def add_product():
+    # 1. Buscamos todos os fornecedores para preencher o <select> no formulário
+    suppliers = Supplier.query.all()
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        sku = request.form.get('sku')
+        supplier_id = request.form.get('supplier_id')
+        min_level = int(request.form.get('min_level'))
+        # Lendo os dois preços
+        cost = float(request.form.get('cost'))   
+        price = float(request.form.get('price'))
+        
+        # Validação: Verifica se o SKU já existe para evitar duplicidade
+        existing_product = Product.query.filter_by(sku=sku).first()
+        if existing_product:
+            flash(f'Erro: O SKU {sku} já está cadastrado.', 'danger')
+            return redirect(url_for('inventory.add_product'))
+            
+        # Criação do Objeto Produto
+        # Nota: Começamos com quantity=0. O correto é dar entrada via Movimentação depois.
+        new_product = Product(
+            name=name,
+            sku=sku,
+            supplier_id=supplier_id,
+            min_level=min_level,
+            cost=cost,   
+            price=price,
+            quantity=0 
+        )
+        
+        try:
+            db.session.add(new_product)
+            db.session.commit()
+            flash(f'Produto "{name}" cadastrado com sucesso!', 'success')
+            return redirect(url_for('inventory.index'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao cadastrar: {str(e)}', 'danger')
+            
+    return render_template('inventory/product_form.html', suppliers=suppliers)
+
+
+# ... (códigos anteriores)
+
+@inventory_bp.route('/product/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required   # <--- E AQUI TAMBÉM
+def edit_product(id):
+    # Busca o produto pelo ID ou retorna erro 404 se não existir
+    product = Product.query.get_or_404(id)
+    suppliers = Supplier.query.all()
+    
+    if request.method == 'POST':
+        # Atualiza os campos com o que veio do formulário
+        product.name = request.form.get('name')
+        # product.sku = request.form.get('sku') # Geralmente não permitimos mudar SKU (Regra de Negócio)
+        product.supplier_id = request.form.get('supplier_id')
+        product.min_level = int(request.form.get('min_level'))
+        product.cost = float(request.form.get('cost'))
+        product.price = float(request.form.get('price'))
+        
+        # Nota Sênior: Não alteramos a 'quantity' aqui! 
+        # Estoque só se mexe via Movimentação (Entrada/Saída). Isso garante rastreabilidade.
+        
+        try:
+            db.session.commit() # Apenas salvamos o objeto que já existia
+            flash(f'Produto "{product.name}" atualizado com sucesso!', 'success')
+            return redirect(url_for('inventory.index'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao atualizar: {str(e)}', 'danger')
+            
+    # Renderizamos o MESMO formulário de criação, mas passando o objeto 'product' para preencher os campos
+    return render_template('inventory/product_form.html', suppliers=suppliers, product=product)
+
+# No topo do arquivo, garanta que Movement está importado
+# from app.models import Product, Movement, Supplier
+
+@inventory_bp.route('/product/<int:id>')
+@login_required
+def product_details(id):
+    product = Product.query.get_or_404(id)
+    
+    # Buscamos as movimentações APENAS deste produto, ordenadas pela data
+    movements = Movement.query.filter_by(product_id=id).order_by(Movement.date.desc()).all()
+    
+    return render_template('inventory/product_details.html', product=product, movements=movements)
