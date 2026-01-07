@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from app.models import Product, Movement, Supplier, Movement, User
+from app.models import Product, Supplier, Movement, User
 from app.extensions import db
 from app.decorators import admin_required
+from datetime import datetime  
 
 inventory_bp = Blueprint('inventory', __name__)
 
@@ -11,7 +12,8 @@ inventory_bp = Blueprint('inventory', __name__)
 def index():
     # Se ainda não tivermos templates, vamos retornar texto simples para testar
     products = Product.query.all()
-    return render_template('inventory/index.html', products=products)
+    formatted_date = datetime.now().strftime('%d/%m/%Y')
+    return render_template('inventory/index.html', products=products, now=formatted_date)
 
 # ... (mantenha os imports lá em cima)
 

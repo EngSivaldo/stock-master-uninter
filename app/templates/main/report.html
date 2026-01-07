@@ -1,43 +1,142 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4"><i class="bi bi-file-earmark-text"></i> Relatório de Movimentações</h2>
+{% block page_title %}Relatórios Gerenciais{% endblock %}
+{% block page_subtitle %}Análise financeira e operacional do estoque.{% endblock %}
 
-    <div class="card shadow">
-        <div class="card-body">
-            <table class="table table-hover table-striped">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Data/Hora</th>
-                        <th>Produto</th>
-                        <th>Tipo</th>
-                        <th>Quantidade</th>
-                        <th>Responsável</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for m in movements %}
-                    <tr>
-                        <td>{{ m.date.strftime('%d/%m/%Y %H:%M') }}</td>
-                        <td>{{ m.product.name }}</td>
-                        <td>
-                            {% if m.type == 'IN' %}
-                                <span class="badge bg-success">ENTRADA</span>
-                            {% else %}
-                                <span class="badge bg-danger">SAÍDA</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ m.quantity }}</td>
-                        <td>{{ m.user.username }}</td> </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center">Nenhuma movimentação registrada.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+{% block page_actions %}
+<a href="{{ url_for('main.export_csv') }}" class="btn btn-success shadow-sm">
+    <i class="bi bi-file-earmark-spreadsheet me-2"></i>Baixar Excel (CSV)
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 bg-primary text-white bg-gradient">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-white-50 small text-uppercase fw-bold">Capital Investido</span>
+                    <i class="bi bi-wallet2 fs-4 opacity-50"></i>
+                </div>
+                <h2 class="fw-bold mb-0">R$ {{ "%.2f"|format(total_cost) }}</h2>
+                <small class="text-white-50">Custo de Aquisição</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small text-uppercase fw-bold">Potencial de Venda</span>
+                    <i class="bi bi-graph-up-arrow fs-4 text-success"></i>
+                </div>
+                <h2 class="fw-bold text-dark mb-0">R$ {{ "%.2f"|format(total_revenue_potential) }}</h2>
+                <small class="text-success fw-bold">
+                    Lucro Est.: R$ {{ "%.2f"|format(total_revenue_potential - total_cost) }}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 {% if low_stock_products|length > 0 %}border-start border-danger border-4{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small text-uppercase fw-bold">Alertas de Estoque</span>
+                    <i class="bi bi-exclamation-triangle fs-4 text-danger"></i>
+                </div>
+                <h2 class="fw-bold text-dark mb-0">{{ low_stock_products|length }}</h2>
+                <small class="text-muted">Produtos abaixo do mínimo</small>
+            </div>
         </div>
     </div>
 </div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0">Mix por Fornecedor</h6>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="supplierChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-danger">⚠️ Reposição Necessária</h6>
+                <small class="text-muted">Prioridade Alta</small>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted small text-uppercase">
+                        <tr>
+                            <th class="ps-4">Produto</th>
+                            <th class="text-center">Atual</th>
+                            <th class="text-center">Mínimo</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in low_stock_products %}
+                        <tr>
+                            <td class="ps-4 fw-medium text-dark">{{ p.name }}</td>
+                            <td class="text-center text-danger fw-bold">{{ p.quantity }}</td>
+                            <td class="text-center text-muted">{{ p.min_level }}</td>
+                            <td class="text-end pe-3">
+                                <a href="{{ url_for('inventory.new_movement') }}" class="btn btn-sm btn-outline-primary py-0">
+                                    <i class="bi bi-plus-lg"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="bi bi-check-circle fs-1 text-success d-block mb-2"></i>
+                                Tudo certo!
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const ctx = document.getElementById('supplierChart');
+    if (ctx) {
+        // O Flask preenche estas variáveis chart_labels e chart_data
+        const labels = {{ chart_labels | tojson }};
+        const data = {{ chart_data | tojson }};
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+</script>
 {% endblock %}
