@@ -29,6 +29,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ url_for('inventory.suppliers_list') }}" class="nav-link {% if request.endpoint == 'inventory.suppliers_list' %}active{% endif %}">
+                        <i class="bi bi-buildings"></i> Fornecedores
+                    </a>
+                </li>
+                <li>
                     <a href="{{ url_for('inventory.new_movement') }}" class="nav-link {% if request.endpoint == 'inventory.new_movement' %}active{% endif %}">
                         <i class="bi bi-arrow-left-right"></i> Movimentações
                     </a>

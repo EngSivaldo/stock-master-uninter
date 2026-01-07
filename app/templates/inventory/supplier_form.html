@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8"> <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-building me-2 text-primary"></i>
+                    {{ 'Editar Fornecedor' if supplier else 'Novo Fornecedor' }}
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    
+                    <h6 class="text-uppercase text-muted fw-bold small mb-3">Dados da Empresa</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-8">
+                            <label class="form-label">Razão Social / Nome</label>
+                            <input type="text" name="name" class="form-control" placeholder="Ex: Samsung Eletrônica Ltda" 
+                                   value="{{ supplier.name if supplier else '' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">CNPJ</label>
+                            <input type="text" name="cnpj" class="form-control font-monospace" placeholder="00.000.000/0000-00" 
+                                   value="{{ supplier.cnpj if supplier else '' }}">
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase text-muted fw-bold small mb-3">Canais de Contato</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Nome do Representante</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                <input type="text" name="contact_name" class="form-control" placeholder="Ex: João Silva"
+                                       value="{{ supplier.contact_name if supplier else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Email Comercial</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="email" class="form-control" placeholder="contato@empresa.com"
+                                       value="{{ supplier.email if supplier else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Telefone / WhatsApp</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-whatsapp"></i></span>
+                                <input type="text" name="phone" class="form-control" placeholder="(00) 00000-0000"
+                                       value="{{ supplier.phone if supplier else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase text-muted fw-bold small mb-3">Endereço e Localização</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Endereço Completo</label>
+                            <input type="text" name="address" class="form-control" placeholder="Rua, Número, Bairro"
+                                   value="{{ supplier.address if supplier else '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Cidade</label>
+                            <input type="text" name="city" class="form-control" placeholder="Ex: São Paulo"
+                                   value="{{ supplier.city if supplier else '' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">UF</label>
+                            <input type="text" name="state" class="form-control text-uppercase" placeholder="SP" maxlength="2"
+                                   value="{{ supplier.state if supplier else '' }}">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('inventory.suppliers_list') }}" class="btn btn-light text-muted">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                            <i class="bi bi-save me-2"></i>Salvar Cadastro
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

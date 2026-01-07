@@ -1,6 +1,6 @@
 from flask import Flask
-from config import Config
 from app.extensions import db, migrate, login_manager
+from config import Config
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -11,15 +11,21 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
-    # Registrar Blueprints (Vamos criar os arquivos em breve)
-    # Importamos aqui dentro para evitar "Circular Import"
-    from app.blueprints.auth.routes import auth_bp
+    # --- CORREÇÃO DE IMPORTAÇÃO (Padrão Sênior) ---
+    # Importamos do pacote (pasta), pois os __init__.py lá dentro já expõem o blueprint
+    
+    # Auth: Importa da pasta auth (graças ao fix que fizemos antes)
+    from app.blueprints.auth import auth_bp 
+    
+    # Inventory: Importa do routes (supondo que inventory ainda usa o método antigo)
     from app.blueprints.inventory.routes import inventory_bp
+    
+    # Main: Importa do routes
     from app.blueprints.main.routes import main_bp 
-    # from app.blueprints.admin.routes import admin_bp (Futuro)
+    # -----------------------------------------------
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(inventory_bp) # Sem prefixo ou '/inventory'
+    app.register_blueprint(inventory_bp) 
     app.register_blueprint(main_bp)
     
     return app

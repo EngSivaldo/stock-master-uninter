@@ -18,11 +18,23 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-
 class Supplier(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    
+    # Dados Principais
     name = db.Column(db.String(100), nullable=False)
-    contact = db.Column(db.String(100))
+    cnpj = db.Column(db.String(20), unique=True) # Novo: CNPJ deve ser único
+    
+    # Contato
+    contact_name = db.Column(db.String(100)) # Mudamos de 'contact' para 'contact_name' (Nome da pessoa)
+    email = db.Column(db.String(100))        # Novo
+    phone = db.Column(db.String(20))         # Novo
+    
+    # Endereço
+    address = db.Column(db.String(200))      # Novo (Rua, Número, Bairro)
+    city = db.Column(db.String(100))         # Novo
+    state = db.Column(db.String(2))          # Novo (UF: SP, RJ, etc)
+    
     products = db.relationship('Product', backref='supplier', lazy=True)
 
 class Product(db.Model):

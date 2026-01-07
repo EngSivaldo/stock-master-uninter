@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from app.models import Product, Movement, Supplier
+from app.models import Product, Movement, Supplier, Movement, User
 from app.extensions import db
 from app.decorators import admin_required
 
@@ -162,3 +162,68 @@ def product_details(id):
     movements = Movement.query.filter_by(product_id=id).order_by(Movement.date.desc()).all()
     
     return render_template('inventory/product_details.html', product=product, movements=movements)
+
+
+
+# --- GESTÃO DE FORNECEDORES ---
+
+@inventory_bp.route('/suppliers')
+@login_required
+def suppliers_list():
+    suppliers = Supplier.query.all()
+    return render_template('inventory/suppliers_list.html', suppliers=suppliers)
+
+@inventory_bp.route('/suppliers/new', methods=['GET', 'POST'])
+@login_required
+def add_supplier():
+    if request.method == 'POST':
+        # Captura todos os campos do form completo
+        data = {
+            'name': request.form.get('name'),
+            'cnpj': request.form.get('cnpj'),
+            'contact_name': request.form.get('contact_name'),
+            'email': request.form.get('email'),
+            'phone': request.form.get('phone'),
+            'address': request.form.get('address'),
+            'city': request.form.get('city'),
+            'state': request.form.get('state')
+        }
+        
+        # Cria o objeto desempacotando o dicionário (**data)
+        supplier = Supplier(**data)
+        
+        try:
+            db.session.add(supplier)
+            db.session.commit()
+            flash(f'Fornecedor {data["name"]} cadastrado!', 'success')
+            return redirect(url_for('inventory.suppliers_list'))
+        except:
+            db.session.rollback()
+            flash('Erro: CNPJ já cadastrado ou dados inválidos.', 'danger')
+        
+    return render_template('inventory/supplier_form.html', supplier=None)
+
+@inventory_bp.route('/suppliers/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_supplier(id):
+    supplier = Supplier.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        supplier.name = request.form.get('name')
+        supplier.cnpj = request.form.get('cnpj')
+        supplier.contact_name = request.form.get('contact_name')
+        supplier.email = request.form.get('email')
+        supplier.phone = request.form.get('phone')
+        supplier.address = request.form.get('address')
+        supplier.city = request.form.get('city')
+        supplier.state = request.form.get('state')
+        
+        try:
+            db.session.commit()
+            flash('Dados atualizados com sucesso.', 'success')
+            return redirect(url_for('inventory.suppliers_list'))
+        except:
+            db.session.rollback()
+            flash('Erro ao atualizar. Verifique se o CNPJ já existe.', 'danger')
+        
+    return render_template('inventory/supplier_form.html', supplier=supplier)

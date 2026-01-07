@@ -1,8 +1,8 @@
-"""Inicial
+"""Banco na raiz com fornecedores completos
 
-Revision ID: ca0c132aaad6
+Revision ID: 6811805c8849
 Revises: 
-Create Date: 2026-01-06 20:51:27.755311
+Create Date: 2026-01-07 17:54:18.003276
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ca0c132aaad6'
+revision = '6811805c8849'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,8 +21,15 @@ def upgrade():
     op.create_table('supplier',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
-    sa.Column('contact', sa.String(length=100), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('cnpj', sa.String(length=20), nullable=True),
+    sa.Column('contact_name', sa.String(length=100), nullable=True),
+    sa.Column('email', sa.String(length=100), nullable=True),
+    sa.Column('phone', sa.String(length=20), nullable=True),
+    sa.Column('address', sa.String(length=200), nullable=True),
+    sa.Column('city', sa.String(length=100), nullable=True),
+    sa.Column('state', sa.String(length=2), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('cnpj')
     )
     op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -38,6 +45,7 @@ def upgrade():
     sa.Column('sku', sa.String(length=50), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=True),
     sa.Column('min_level', sa.Integer(), nullable=True),
+    sa.Column('cost', sa.Float(), nullable=True),
     sa.Column('price', sa.Float(), nullable=True),
     sa.Column('supplier_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['supplier_id'], ['supplier.id'], ),
