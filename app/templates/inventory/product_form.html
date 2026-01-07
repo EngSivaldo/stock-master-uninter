@@ -35,6 +35,17 @@
                                    placeholder="Ex: Cimento CP II 50kg"
                                    value="{{ product.name if product else '' }}" required onkeyup="updateSmartSku()">
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Categoria</label>
+                            <select name="category_id" class="form-select" required>
+                                <option value="" disabled {% if not product %}selected{% endif %}>Selecione uma categoria...</option>
+                                {% for c in categories %}
+                                    <option value="{{ c.id }}" {% if product and product.category_id == c.id %}selected{% endif %}>
+                                        {{ c.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
                         <div class="mb-4">
                             <label class="form-label text-uppercase text-muted small fw-bold">Fornecedor Principal</label>

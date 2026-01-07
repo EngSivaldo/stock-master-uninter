@@ -5,12 +5,12 @@
 
 {% block page_actions %}
 <div class="d-flex gap-2">
-    <a href="{{ url_for('inventory.new_movement') }}" class="btn btn-primary shadow-sm">
+    <a href="{{ url_for('inventory.new_movement') }}" class="btn btn-primary btn-sm shadow-sm d-flex align-items-center">
         <i class="bi bi-arrow-left-right me-2"></i>Movimentar
     </a>
 
     {% if current_user.role == 'admin' %}
-    <a href="{{ url_for('inventory.add_product') }}" class="btn btn-success shadow-sm">
+    <a href="{{ url_for('inventory.add_product') }}" class="btn btn-success btn-sm shadow-sm d-flex align-items-center">
         <i class="bi bi-plus-circle me-2"></i>Novo Item
     </a>
     {% endif %}
@@ -19,17 +19,17 @@
 
 {% block content %}
 
-<div class="row g-4 mb-5">
+<div class="row g-3 mb-4">
     <div class="col-md-4">
-        <div class="card kpi-card shadow-sm h-100 border-0">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-start">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="kpi-label mb-1 text-uppercase text-muted fw-bold" style="font-size: 0.75rem;">Total de Itens</div>
-                        <div class="kpi-value display-6 fw-bold text-dark">{{ products.total }}</div>
+                        <div class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem;">Total de Itens</div>
+                        <div class="fs-4 fw-bold text-dark">{{ products.total }}</div>
                     </div>
-                    <div class="p-3 bg-primary bg-opacity-10 rounded-circle text-primary">
-                        <i class="bi bi-box-seam fs-4"></i>
+                    <div class="bg-primary bg-opacity-10 text-primary rounded p-2">
+                        <i class="bi bi-box-seam fs-5"></i>
                     </div>
                 </div>
             </div>
@@ -37,15 +37,15 @@
     </div>
 
     <div class="col-md-4">
-        <div class="card kpi-card shadow-sm h-100 border-0" style="border-left: 4px solid #10b981;">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-start">
+        <div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="kpi-label mb-1 text-uppercase text-muted fw-bold" style="font-size: 0.75rem;">Status do Sistema</div>
-                        <div class="kpi-value fs-5 fw-bold text-success mt-2">Operacional</div>
+                        <div class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem;">Status</div>
+                        <div class="fs-5 fw-bold text-success">Operacional</div>
                     </div>
-                    <div class="p-3 bg-success bg-opacity-10 rounded-circle text-success">
-                        <i class="bi bi-check-lg fs-4"></i>
+                    <div class="bg-success bg-opacity-10 text-success rounded p-2">
+                        <i class="bi bi-check-lg fs-5"></i>
                     </div>
                 </div>
             </div>
@@ -53,17 +53,17 @@
     </div>
 
     <div class="col-md-4">
-        <div class="card kpi-card shadow-sm h-100 border-0" style="border-left: 4px solid #f59e0b;">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-start">
+        <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="kpi-label mb-2 text-uppercase text-muted fw-bold" style="font-size: 0.75rem;">Atalhos</div>
-                        <a href="{{ url_for('inventory.new_movement') }}" class="btn btn-sm btn-outline-dark rounded-pill px-3">
-                            <i class="bi bi-lightning-charge me-1"></i> Registrar Saída/Entrada
+                        <div class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem;">Atalho</div>
+                        <a href="{{ url_for('inventory.new_movement') }}" class="text-decoration-none small fw-bold stretched-link text-dark">
+                            Registrar Entrada/Saída &rarr;
                         </a>
                     </div>
-                    <div class="p-3 bg-warning bg-opacity-10 rounded-circle text-warning">
-                        <i class="bi bi-star fs-4"></i>
+                    <div class="bg-warning bg-opacity-10 text-warning rounded p-2">
+                        <i class="bi bi-lightning-charge fs-5"></i>
                     </div>
                 </div>
             </div>
@@ -71,127 +71,140 @@
     </div>
 </div>
 
-<div class="row mb-4 align-items-center">
+<div class="row mb-3 align-items-center">
     <div class="col-md-6">
-        <form action="{{ url_for('inventory.index') }}" method="GET" class="d-flex gap-2">
-            <div class="input-group shadow-sm">
+        <form action="{{ url_for('inventory.index') }}" method="GET" class="d-flex">
+            <div class="input-group input-group-sm shadow-sm">
                 <span class="input-group-text bg-white border-end-0 text-muted">
                     <i class="bi bi-search"></i>
                 </span>
                 <input type="text" name="q" id="liveSearchInput" class="form-control border-start-0 ps-0" 
-                       placeholder="Buscar e Enter (Servidor) ou digite (Filtro local)..." 
-                       value="{{ search_query }}" autocomplete="off">
-                
+                       placeholder="Buscar produto..." value="{{ search_query }}" autocomplete="off">
                 {% if search_query %}
-                <a href="{{ url_for('inventory.index') }}" class="btn btn-light border text-muted" title="Limpar Busca">
+                <a href="{{ url_for('inventory.index') }}" class="btn btn-light border text-muted">
                     <i class="bi bi-x-lg"></i>
                 </a>
                 {% endif %}
             </div>
-            <button type="submit" class="d-none"></button> 
         </form>
     </div>
-    
-    <div class="col-md-6 text-end text-muted small">
-        Página <strong>{{ products.page }}</strong> de <strong>{{ products.pages }}</strong> 
-        (Total: {{ products.total }})
+    <div class="col-md-6 text-end text-muted" style="font-size: 0.75rem;">
+        Página <strong>{{ products.page }}</strong> de <strong>{{ products.pages }}</strong>
     </div>
 </div>
 
 <div class="card shadow-sm border-0 overflow-hidden">
-    <div class="card-header bg-white py-3 border-0">
-        <h6 class="fw-bold mb-0 text-dark">Listagem de Produtos</h6>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4 py-3 text-uppercase text-muted small fw-bold border-0">Produto / SKU</th>
-                        <th class="py-3 text-uppercase text-muted small fw-bold border-0">Fornecedor</th>
-                        <th class="py-3 text-uppercase text-muted small fw-bold border-0 text-center">Estoque</th>
-                        <th class="py-3 text-uppercase text-muted small fw-bold border-0 text-end">Preço Venda</th>
-                        <th class="pe-4 py-3 text-uppercase text-muted small fw-bold border-0 text-end">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for p in products.items %}
-                    <tr>
-                        <td class="ps-4 py-3">
-                            <div class="d-flex align-items-center">
-                                <div class="bg-light rounded p-2 me-3 text-secondary">
-                                    <i class="bi bi-box fs-5"></i>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4">Produto</th>
+                    <th class="d-none d-md-table-cell">Fornecedor</th>
+                    <th class="text-center">Estoque</th>
+                    <th class="text-end d-none d-md-table-cell">Preço</th>
+                    <th class="text-end pe-4">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products.items %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light rounded p-2 me-2 text-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                <i class="bi bi-box small"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark text-truncate-mobile" title="{{ p.name }}">
+                                    {{ p.name }}
                                 </div>
-                                <div>
-                                    <div class="fw-bold text-dark">{{ p.name }}</div>
-                                    <div class="small text-muted font-monospace"><i class="bi bi-upc me-1"></i>{{ p.sku }}</div>
+                                <div class="d-flex align-items-center gap-2" style="font-size: 0.7rem;">
+                                    <span class="text-muted font-monospace">{{ p.sku }}</span>
+                                    {% if p.category %}
+                                    <span class="badge bg-light text-secondary border px-1 py-0 fw-normal">
+                                        {{ p.category.name }}
+                                    </span>
+                                    {% endif %}
                                 </div>
                             </div>
-                        </td>
-                        <td class="text-secondary fw-medium">{{ p.supplier.name }}</td>
-                        <td class="text-center">
-                            {% if p.quantity <= p.min_level %}
-                                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-2">{{ p.quantity }} un</span>
-                            {% else %}
-                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-10 px-3 py-2">{{ p.quantity }} un</span>
+                        </div>
+                    </td>
+                    
+                    <td class="d-none d-md-table-cell text-muted small">
+                        {{ p.supplier.name }}
+                    </td>
+
+                    <td class="text-center">
+                        {% if p.quantity <= p.min_level %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2">
+                                {{ p.quantity }}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2">
+                                {{ p.quantity }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-end fw-bold text-dark small d-none d-md-table-cell">
+                        R$ {{ "%.2f"|format(p.price) }}
+                    </td>
+
+                    <td class="pe-4 text-end">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('inventory.product_details', id=p.id) }}" class="btn btn-light border text-muted" title="Ver">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if current_user.role == 'admin' %}
+                            <a href="{{ url_for('inventory.edit_product', id=p.id) }}" class="btn btn-light border text-muted" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
                             {% endif %}
-                        </td>
-                        <td class="text-end fw-bold text-dark">R$ {{ "%.2f"|format(p.price) }}</td>
-                        <td class="pe-4 text-end">
-                            <div class="btn-group shadow-sm" role="group">
-                                <a href="{{ url_for('inventory.product_details', id=p.id) }}" class="btn btn-sm btn-light border"><i class="bi bi-eye text-primary"></i></a>
-                                {% if current_user.role == 'admin' %}
-                                <a href="{{ url_for('inventory.edit_product', id=p.id) }}" class="btn btn-sm btn-light border"><i class="bi bi-pencil text-dark"></i></a>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
-                            <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
-                            Nenhum produto encontrado.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        <small>Nenhum produto encontrado.</small>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     
-    <div class="card-footer bg-white py-3">
-        <nav aria-label="Navegação de página">
+    {% if products.pages > 1 %}
+    <div class="card-footer bg-white py-2">
+        <nav>
             <ul class="pagination pagination-sm justify-content-center mb-0">
                 <li class="page-item {% if not products.has_prev %}disabled{% endif %}">
-                    <a class="page-link border-0" href="{{ url_for('inventory.index', page=products.prev_num, q=search_query) }}">
-                        &laquo; Anterior
+                    <a class="page-link shadow-none border-0" href="{{ url_for('inventory.index', page=products.prev_num, q=search_query) }}">
+                        &laquo;
                     </a>
                 </li>
-
-                {% for page_num in products.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% for page_num in products.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
                     {% if page_num %}
                         <li class="page-item {% if page_num == products.page %}active{% endif %}">
-                            <a class="page-link border-0" href="{{ url_for('inventory.index', page=page_num, q=search_query) }}">{{ page_num }}</a>
+                            <a class="page-link shadow-none border-0 rounded-circle mx-1" href="{{ url_for('inventory.index', page=page_num, q=search_query) }}">{{ page_num }}</a>
                         </li>
                     {% else %}
                         <li class="page-item disabled"><span class="page-link border-0">...</span></li>
                     {% endif %}
                 {% endfor %}
-
                 <li class="page-item {% if not products.has_next %}disabled{% endif %}">
-                    <a class="page-link border-0" href="{{ url_for('inventory.index', page=products.next_num, q=search_query) }}">
-                        Próximo &raquo;
+                    <a class="page-link shadow-none border-0" href="{{ url_for('inventory.index', page=products.next_num, q=search_query) }}">
+                        &raquo;
                     </a>
                 </li>
             </ul>
         </nav>
     </div>
+    {% endif %}
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Mantemos o Live Search como um "Filtro Rápido" para a página atual
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('liveSearchInput');
         const tableRows = document.querySelectorAll('tbody tr');

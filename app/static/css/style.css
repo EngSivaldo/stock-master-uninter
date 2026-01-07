@@ -9,6 +9,7 @@
   --card-border: rgba(0, 0, 0, 0.03);
 }
 
+/* --- GLOBAL: Tipografia e Layout --- */
 body {
   font-family: "Inter", sans-serif;
   background-color: var(--bg-body);
@@ -16,7 +17,17 @@ body {
   overflow-x: hidden;
 }
 
-/* --- SIDEBAR (O segredo do visual Pro) --- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #111827;
+  letter-spacing: -0.025em;
+}
+
+/* --- SIDEBAR (Menu Lateral) --- */
 .sidebar {
   min-height: 100vh;
   width: 260px;
@@ -68,7 +79,7 @@ body {
 }
 
 .nav-link.text-danger:hover {
-  background-color: #ef4444; /* Vermelho */
+  background-color: #ef4444; /* Vermelho para Logout */
 }
 
 /* --- CONTEÚDO PRINCIPAL --- */
@@ -78,10 +89,10 @@ body {
   min-height: 100vh;
 }
 
-/* --- CARDS MODERNOS --- */
+/* --- CARDS E BUTTONS --- */
 .card {
   border: 1px solid var(--card-border);
-  border-radius: 16px; /* Bem arredondado */
+  border-radius: 16px;
   background: #fff;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
     0 2px 4px -1px rgba(0, 0, 0, 0.03);
@@ -95,11 +106,11 @@ body {
   color: #111827;
 }
 
-/* --- BADGES E BOTÕES --- */
 .badge {
   padding: 0.5em 0.8em;
   font-weight: 600;
   border-radius: 6px;
+  letter-spacing: 0.025em;
 }
 
 .btn {
@@ -118,7 +129,7 @@ body {
   background-color: #4338ca;
 }
 
-/* KPI CARDS (Pequenos cartões de resumo) */
+/* --- KPI CARDS (Dashboard) --- */
 .kpi-card {
   border-left: 4px solid var(--primary-color);
 }
@@ -136,11 +147,7 @@ body {
 
 /* --- TELA DE LOGIN --- */
 .login-page {
-  background: linear-gradient(
-    135deg,
-    #4f46e5 0%,
-    #0ea5e9 100%
-  ); /* Degradê Azul Moderno */
+  background: linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -168,4 +175,137 @@ body {
   justify-content: center;
   font-size: 1.8rem;
   margin: 0 auto 1.5rem auto;
+}
+
+/* --- ESTILO DE TABELAS (Enterprise Style) --- */
+.table-responsive {
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.table {
+  font-size: 0.875rem; /* 14px */
+  margin-bottom: 0;
+}
+
+.table thead th {
+  font-size: 0.75rem; /* 12px */
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #6b7280;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* --- RESPONSIVIDADE (Mobile & Tablet) --- */
+@media (max-width: 768px) {
+  /* 1. Esconde a Sidebar jogando ela para a esquerda negativa */
+  .sidebar {
+    left: -260px;
+    transition: all 0.3s ease-in-out;
+    box-shadow: none;
+  }
+
+  /* Classe que será adicionada via Javascript para mostrar o menu */
+  .sidebar.show {
+    left: 0;
+    box-shadow: 10px 0 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* 2. O conteúdo principal ocupa 100% da tela */
+  .main-content {
+    margin-left: 0;
+    padding: 15px; /* Menos padding no celular */
+  }
+
+  /* 3. Ajustes nos Cards */
+  .kpi-card {
+    margin-bottom: 1rem;
+  }
+
+  /* 4. Tabela com rolagem horizontal */
+  .table-responsive {
+    border: 0;
+    overflow-x: auto; /* Permite rolar a tabela para o lado */
+  }
+
+  /* Botão de fechar menu (só aparece no mobile dentro do menu) */
+  .sidebar-close-btn {
+    display: block !important;
+  }
+}
+
+/* Overlay Escuro (Fundo preto transparente quando menu abre) */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999; /* Fica atrás da sidebar (1000) mas na frente do resto */
+}
+
+.sidebar-overlay.show {
+  display: block;
+}
+
+/* Botão Fechar Menu (Padrão desktop: escondido) */
+.sidebar-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  cursor: pointer;
+}
+
+/* --- FOOTER (Rodapé) --- */
+.footer {
+  background-color: #fff;
+  border-top: 1px solid #e5e7eb; /* Linha sutil no topo */
+  padding: 1.5rem 0;
+  margin-top: auto; /* Empurra o rodapé para o final */
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* Ajuste para garantir que o footer fique embaixo */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* O container fluido dentro do main-content precisa crescer */
+.main-content > .container-fluid {
+  flex: 1;
 }

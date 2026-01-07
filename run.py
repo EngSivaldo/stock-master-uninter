@@ -1,7 +1,6 @@
 from app import create_app
 from app.extensions import db
-from app.models import User, Supplier
-
+from app.models import User, Supplier, Category, Product 
 app = create_app()
 
 # --- BLOCO DE AUTOMAÇÃO (SEED) ---
@@ -40,6 +39,33 @@ def seed_database():
             db.session.add(s1)
             db.session.commit()
             print("✅ Fornecedores de teste criados!")
+            
+        # 3. (NOVO) Verifica e Cria CATEGORIAS Padrão
+        if not Category.query.first():
+            print("⚠️ Nenhuma categoria encontrada. Criando padrões...")
+            categories = ['Cervejas', 'Refrigerantes', 'Destilados', 'Vinhos', 'Petiscos', 'Diversos']
+            
+            for cat_name in categories:
+                db.session.add(Category(name=cat_name))
+            
+            db.session.commit()
+            print("✅ Categorias criadas!")
+
+        # 4. Verifica e Cria PRODUTO Padrão (Seu código antigo ajustado)
+        if not Product.query.first():
+            # Precisamos pegar uma categoria e um fornecedor para vincular
+            padrao_supplier = Supplier.query.first()
+            padrao_category = Category.query.filter_by(name='Cervejas').first() # <--- Pega a categoria
+            
+            # ... (criação do produto) ...
+            p1 = Product(
+                name='Produto Exemplo', 
+                sku='TEST-001', 
+                supplier_id=padrao_supplier.id,
+                category_id=padrao_category.id, # <--- Vincula aqui
+                # ...
+            )
+            # ...
 
 # ... (final do arquivo igual) ...
 

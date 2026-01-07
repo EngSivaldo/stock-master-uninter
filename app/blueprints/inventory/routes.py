@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from app.models import Product, Supplier, Movement, User
-from app.extensions import db
+from app.models import Product, Movement, Supplier, Category, User 
 from app.decorators import admin_required
 from datetime import datetime  
+from app.extensions import db
 
 inventory_bp = Blueprint('inventory', __name__)
 
@@ -98,11 +98,13 @@ def new_movement():
 def add_product():
     # 1. Buscamos todos os fornecedores para preencher o <select> no formulário
     suppliers = Supplier.query.all()
+    categories = Category.query.all() 
     
     if request.method == 'POST':
         name = request.form.get('name')
         sku = request.form.get('sku')
         supplier_id = request.form.get('supplier_id')
+        category_id = request.form.get('category_id') # <--- Captura do form
         min_level = int(request.form.get('min_level'))
         # Lendo os dois preços
         cost = float(request.form.get('cost'))   
@@ -120,6 +122,7 @@ def add_product():
             name=name,
             sku=sku,
             supplier_id=supplier_id,
+            category_id=category_id, # <--- Salva no banco
             min_level=min_level,
             cost=cost,   
             price=price,
@@ -147,12 +150,14 @@ def edit_product(id):
     # Busca o produto pelo ID ou retorna erro 404 se não existir
     product = Product.query.get_or_404(id)
     suppliers = Supplier.query.all()
+    categories = Category.query.all() # <--- Busca categorias
     
     if request.method == 'POST':
         # Atualiza os campos com o que veio do formulário
         product.name = request.form.get('name')
         # product.sku = request.form.get('sku') # Geralmente não permitimos mudar SKU (Regra de Negócio)
         product.supplier_id = request.form.get('supplier_id')
+        product.category_id = request.form.get('category_id') # <--- Atualiza
         product.min_level = int(request.form.get('min_level'))
         product.cost = float(request.form.get('cost'))
         product.price = float(request.form.get('price'))

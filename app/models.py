@@ -18,24 +18,36 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
 class Supplier(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     
     # Dados Principais
     name = db.Column(db.String(100), nullable=False)
-    cnpj = db.Column(db.String(20), unique=True) # Novo: CNPJ deve ser único
+    cnpj = db.Column(db.String(20), unique=True)
     
     # Contato
-    contact_name = db.Column(db.String(100)) # Mudamos de 'contact' para 'contact_name' (Nome da pessoa)
-    email = db.Column(db.String(100))        # Novo
-    phone = db.Column(db.String(20))         # Novo
+    contact_name = db.Column(db.String(100))
+    email = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
     
     # Endereço
-    address = db.Column(db.String(200))      # Novo (Rua, Número, Bairro)
-    city = db.Column(db.String(100))         # Novo
-    state = db.Column(db.String(2))          # Novo (UF: SP, RJ, etc)
+    address = db.Column(db.String(200))
+    city = db.Column(db.String(100))
+    state = db.Column(db.String(2))
     
     products = db.relationship('Product', backref='supplier', lazy=True)
+
+# CLASSE CATEGORIA (Movida para cima para evitar erro de referência, se necessário)
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False, unique=True)
+    
+    # Relacionamento
+    products = db.relationship('Product', backref='category', lazy=True)
+
+    def __repr__(self):
+        return f'<Category {self.name}>'
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -46,9 +58,12 @@ class Product(db.Model):
     cost = db.Column(db.Float, default=0.0)
     price = db.Column(db.Float, default=0.0)
     
+    # --- CORREÇÃO AQUI (Sem a vírgula no final) ---
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
+    # ----------------------------------------------
+    
     supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'), nullable=False)
-    # O relacionamento com Movement já é criado pelo backref na classe Movement abaixo, 
-    # ou definido aqui. No código anterior, definimos aqui:
+    
     movements = db.relationship('Movement', backref='product', lazy=True)
 
 class Movement(db.Model):
@@ -60,7 +75,4 @@ class Movement(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
 
-    # --- CORREÇÃO AQUI ---
-    # Criamos o relacionamento para poder usar 'movement.user.username'
     user = db.relationship('User', backref='movements')
-    # ---------------------

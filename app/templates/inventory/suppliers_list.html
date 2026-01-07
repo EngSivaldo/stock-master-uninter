@@ -1,76 +1,95 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h4 class="fw-bold text-dark mb-0">Parceiros & Fornecedores</h4>
-        <p class="text-muted small mb-0">Gerencie a origem dos seus produtos.</p>
-    </div>
-    <a href="{{ url_for('inventory.add_supplier') }}" class="btn btn-primary shadow-sm">
-        <i class="bi bi-building-add me-2"></i>Novo Fornecedor
-    </a>
-</div>
+{% block page_title %}Fornecedores{% endblock %}
+{% block page_subtitle %}Gestão de parceiros e origens dos produtos.{% endblock %}
 
-<div class="row g-4">
-    {% for s in suppliers %}
-    <div class="col-md-6 col-lg-4">
-        <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
-          <div class="card-body p-4">
-            <div class="d-flex align-items-center mb-3">
-                <div class="bg-indigo-100 text-primary rounded p-3 me-3 bg-opacity-10">
-                    <i class="bi bi-building fs-3"></i>
-                </div>
-                <div class="overflow-hidden">
-                    <h5 class="fw-bold text-dark mb-0 text-truncate">{{ s.name }}</h5>
-                    {% if s.cnpj %}
-                    <small class="text-muted font-monospace" style="font-size: 0.75rem;">CNPJ: {{ s.cnpj }}</small>
-                    {% else %}
-                    <small class="text-muted fst-italic" style="font-size: 0.75rem;">CNPJ não informado</small>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <hr class="opacity-10 my-3">
-            
-            <div class="mb-3">
-                <div class="d-flex align-items-center mb-2 text-dark small">
-                    <i class="bi bi-person me-2 text-secondary"></i>
-                    {{ s.contact_name or 'Representante não inf.' }}
-                </div>
-                <div class="d-flex align-items-center mb-2 text-dark small">
-                    <i class="bi bi-envelope me-2 text-secondary"></i>
-                    {{ s.email or '-' }}
-                </div>
-                <div class="d-flex align-items-center text-dark small">
-                    <i class="bi bi-telephone me-2 text-secondary"></i>
-                    {{ s.phone or '-' }}
-                </div>
-            </div>
-        
-            <div class="mb-4">
-                {% if s.city and s.state %}
-                <span class="badge bg-light text-dark border">
-                    <i class="bi bi-geo-alt me-1"></i> {{ s.city }} / {{ s.state }}
-                </span>
-                {% endif %}
-            </div>
-        
-            <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                <small class="text-muted fw-bold" style="font-size: 0.75rem;">
-                    {{ s.products|length }} ITENS
-                </small>
-                <a href="{{ url_for('inventory.edit_supplier', id=s.id) }}" class="btn btn-sm btn-outline-primary border-0 bg-blue-50">
-                    Editar
-                </a>
-            </div>
-        </div>
-        </div>
+{% block page_actions %}
+<a href="{{ url_for('inventory.add_supplier') }}" class="btn btn-primary btn-sm shadow-sm d-flex align-items-center">
+    <i class="bi bi-building-add me-2"></i>Novo Fornecedor
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0 overflow-hidden">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0 text-dark">Base de Fornecedores</h6>
+        <span class="badge bg-light text-muted border">{{ suppliers|length }} registros</span>
     </div>
-    {% else %}
-    <div class="col-12 text-center py-5">
-        <div class="text-muted opacity-50 mb-3"><i class="bi bi-building-slash fs-1"></i></div>
-        <h5 class="text-muted">Nenhum fornecedor cadastrado.</h5>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4">Empresa / CNPJ</th>
+                    <th class="d-none d-md-table-cell">Contato Principal</th>
+                    <th class="d-none d-md-table-cell">Localização</th>
+                    <th class="text-center">Produtos</th>
+                    <th class="text-end pe-4">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in suppliers %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light rounded p-2 me-3 text-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark text-truncate-mobile" title="{{ s.name }}">
+                                    {{ s.name }}
+                                </div>
+                                <div class="small text-muted font-monospace">
+                                    {{ s.cnpj or 'CNPJ não informado' }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="d-none d-md-table-cell">
+                        <div class="d-flex flex-column small">
+                            <span class="fw-medium text-dark">{{ s.contact_name or '-' }}</span>
+                            <span class="text-muted">{{ s.email or '' }}</span>
+                            <span class="text-muted">{{ s.phone or '' }}</span>
+                        </div>
+                    </td>
+
+                    <td class="d-none d-md-table-cell small text-muted">
+                        {% if s.city %}
+                            <i class="bi bi-geo-alt me-1"></i>{{ s.city }}/{{ s.state }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td class="text-center">
+                        {% if s.products|length > 0 %}
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2">
+                                {{ s.products|length }} itens
+                            </span>
+                        {% else %}
+                            <span class="badge bg-light text-muted border px-2">
+                                0 itens
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td class="pe-4 text-end">
+                        <a href="{{ url_for('inventory.edit_supplier', id=s.id) }}" class="btn btn-sm btn-light border text-muted" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="bi bi-building-slash fs-1 opacity-25 d-block mb-2"></i>
+                        Nenhum fornecedor cadastrado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    {% endfor %}
 </div>
 {% endblock %}
