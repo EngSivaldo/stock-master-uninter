@@ -40,7 +40,18 @@
             </a>
 
             <a href="{{ url_for('inventory.orders_list') }}" class="nav-link {% if 'orders' in request.endpoint %}active{% endif %}">
-                <i class="bi bi-truck"></i> Recebimento (Notas)
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-truck me-2"></i>
+                        Recebimento
+                    </div>
+                    
+                    {% if pending_orders_count and pending_orders_count > 0 %}
+                    <span class="badge bg-danger rounded-pill shadow-sm animate-pulse" style="font-size: 0.7rem;">
+                        {{ pending_orders_count }}
+                    </span>
+                    {% endif %}
+                </div>
             </a>
 
             <a href="{{ url_for('main.report') }}" class="nav-link {% if request.endpoint == 'main.report' %}active{% endif %}">

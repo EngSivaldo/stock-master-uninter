@@ -11,6 +11,13 @@ from werkzeug.utils import secure_filename
 
 inventory_bp = Blueprint('inventory', __name__)
 
+# --- NOVIDADE: Injetor de Contadores para o Menu ---
+@inventory_bp.context_processor
+def inject_pending_counts():
+    # Conta quantos pedidos estão esperando conferência
+    pending_count = PurchaseOrder.query.filter_by(status='pending').count()
+    return dict(pending_orders_count=pending_count)
+
 @inventory_bp.route('/')
 @login_required
 def index():
@@ -350,23 +357,55 @@ def new_order():
     
     if request.method == 'POST':
         supplier_id = request.form.get('supplier_id')
-        invoice_number = request.form.get('invoice_number')
+        invoice_number = request.form.get('invoice_number').strip() # .strip() remove espaços acidentais
         
-        # Cria o Cabeçalho do Pedido
+        # --- TRAVA DE DUPLICIDADE (REFORÇADA) ---
+        # Verifica se JÁ EXISTE um pedido com esse número para esse fornecedor
+        # .count() > 0 é a forma mais rápida de checar existência
+        exists = PurchaseOrder.query.filter_by(
+            supplier_id=supplier_id, 
+            invoice_number=invoice_number
+        ).first()
+        
+        if exists:
+            flash(f'ERRO CRÍTICO: A Nota Fiscal "{invoice_number}" já está cadastrada para este fornecedor!', 'danger')
+            return render_template('inventory/order_form.html', suppliers=suppliers)
+        # ----------------------------------------
+
+        # Cria o Cabeçalho
         order = PurchaseOrder(
             supplier_id=supplier_id,
             invoice_number=invoice_number,
-            status='pending', # Nasce pendente esperando o caminhão
+            status='pending',
             created_by_id=current_user.id
         )
         
         db.session.add(order)
         db.session.commit()
         
-        # Redireciona para a tela de adicionar itens neste pedido
         return redirect(url_for('inventory.order_details', id=order.id))
         
     return render_template('inventory/order_form.html', suppliers=suppliers)
+
+# --- NOVA ROTA: LIMPEZA INTELIGENTE ---
+@inventory_bp.route('/orders/<int:id>/smart_exit')
+@login_required
+def smart_exit(id):
+    """
+    Se o usuário sair da tela e o pedido estiver vazio, a gente apaga.
+    Se tiver itens, a gente só volta para a lista.
+    """
+    order = PurchaseOrder.query.get_or_404(id)
+    
+    # Se não tem itens e ainda está pendente, é LIXO. Apaga.
+    if not order.items and order.status == 'pending':
+        db.session.delete(order)
+        db.session.commit()
+        flash('Recebimento cancelado pois estava vazio.', 'info')
+    else:
+        flash('Recebimento salvo e liberado para conferência.', 'success')
+        
+    return redirect(url_for('inventory.orders_list'))
 
 @inventory_bp.route('/orders/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -398,6 +437,26 @@ def order_details(id):
         return redirect(url_for('inventory.order_details', id=id))
 
     return render_template('inventory/order_details.html', order=order, products=products)
+
+
+@inventory_bp.route('/orders/<int:id>/delete', methods=['POST'])
+@login_required
+def delete_order(id):
+    order = PurchaseOrder.query.get_or_404(id)
+    
+    # Só permite excluir se estiver Pendente (segurança)
+    if order.status == 'pending':
+        try:
+            db.session.delete(order)
+            db.session.commit()
+            flash('Recebimento excluído com sucesso.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Erro ao excluir.', 'danger')
+    else:
+        flash('Não é possível excluir um recebimento já finalizado.', 'warning')
+        
+    return redirect(url_for('inventory.orders_list'))
 
 # --- ROTA DE CONFERÊNCIA (USADA PELO FUNCIONÁRIO NO DEPÓSITO) ---
 

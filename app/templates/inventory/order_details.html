@@ -4,15 +4,16 @@
 
 {% block content %}
 <div class="row g-4">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm">
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm sticky-top" style="top: 20px; z-index: 10;">
             <div class="card-header bg-white py-3">
-                <h6 class="mb-0 fw-bold">Adicionar Item Esperado</h6>
+                <h6 class="mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i>Adicionar Item Esperado</h6>
             </div>
             <div class="card-body">
                 <form method="POST">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-muted">Produto</label>
+                        <label class="form-label small fw-bold text-muted text-uppercase">Produto</label>
                         <select name="product_id" class="form-select" required>
                             <option value="">Selecione...</option>
                             {% for p in products %}
@@ -22,108 +23,166 @@
                         <div class="form-text small">Mostrando apenas produtos deste fornecedor.</div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-muted">Quantidade da Nota</label>
-                        <input type="number" name="quantity" class="form-control" placeholder="Ex: 500" required>
+                        <label class="form-label small fw-bold text-muted text-uppercase">Quantidade da Nota</label>
+                        <input type="number" name="quantity" class="form-control form-control-lg fw-bold" placeholder="Ex: 500" required>
                     </div>
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Adicionar à Lista</button>
+                        <button type="submit" class="btn btn-primary shadow-sm py-2">
+                            Adicionar à Lista <i class="bi bi-arrow-right"></i>
+                        </button>
                     </div>
                 </form>
             </div>
-        </div>
-        
-        <div class="d-grid mt-3">
-            <a href="{{ url_for('inventory.orders_list') }}" class="btn btn-light border">Voltar para Lista</a>
+            <div class="card-footer bg-light">
+                <div class="d-grid">
+                    <a href="{{ url_for('inventory.orders_list') }}" class="btn btn-outline-secondary border-0">
+                        <i class="bi bi-arrow-left me-2"></i>Voltar para Lista
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold">Itens no Aviso de Recebimento</h6>
-                <span class="badge bg-warning text-dark">Status: {{ order.status|upper }}</span>
+            
+            <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <h6 class="mb-0 fw-bold text-dark">
+                    <i class="bi bi-list-task me-2"></i>Itens no Aviso de Recebimento
+                </h6>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-warning text-dark border border-warning-subtle px-3 py-2">
+                        STATUS: {{ order.status|upper }}
+                    </span>
+
+                    {% if order.status == 'pending' %}
+                    <a href="https://wa.me/?text=📦 *Novo Recebimento Cadastrado!*%0A%0AFornecedor: {{ order.supplier.name }}%0ANota: {{ order.invoice_number }}%0A%0APor favor, realize a conferência no sistema." 
+                       target="_blank" 
+                       class="btn btn-sm btn-success text-white fw-bold shadow-sm d-flex align-items-center">
+                        <i class="bi bi-whatsapp me-2"></i> Avisar Depósito
+                    </a>
+                    {% endif %}
+                </div>
             </div>
+
             <div class="card-body p-0">
-                <table class="table align-middle mb-0">
-                    <thead class="bg-light small text-uppercase">
-                        <tr>
-                            <th class="ps-4">Produto</th>
-                            <th class="text-center">Qtd. Nota</th>
-                            <th class="text-center">Qtd. Conferida</th>
-                            <th class="text-end pe-4">Situação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in order.items %}
-                        <tr>
-                            <td class="ps-4 fw-medium">
-                                {{ item.product.name }}
-                                <div class="small text-muted">{{ item.product.sku }}</div>
-                            </td>
-                            
-                            <td class="text-center fw-bold fs-5 text-muted opacity-75">
-                                {{ item.quantity_expected }}
-                            </td>
-                            
-                            <td class="text-center fw-bold fs-5">
-                                {% if order.status == 'completed' %}
-                                    
-                                    {% if item.quantity_received == item.quantity_expected %}
-                                        <span class="text-success">{{ item.quantity_received }}</span>
-                                    
-                                    {% elif item.quantity_received < item.quantity_expected %}
-                                        <span class="text-danger">
-                                            {{ item.quantity_received }}
-                                        </span>
-                                    
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="bg-light small text-uppercase text-muted">
+                            <tr>
+                                <th class="ps-4" style="min-width: 250px;">Produto</th>
+                                <th class="text-center" style="min-width: 100px;">Qtd. Nota</th>
+                                <th class="text-center" style="min-width: 120px;">Qtd. Conferida</th>
+                                <th class="text-end pe-4" style="min-width: 140px;">Situação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items %}
+                            <tr>
+                                <td class="ps-4 fw-medium">
+                                    {{ item.product.name }}
+                                    <div class="small text-muted">{{ item.product.sku }}</div>
+                                </td>
+                                
+                                <td class="text-center fw-bold fs-5 text-muted opacity-75">
+                                    {{ item.quantity_expected }}
+                                </td>
+                                
+                                <td class="text-center fw-bold fs-5">
+                                    {% if order.status == 'completed' %}
+                                        {% if item.quantity_received == item.quantity_expected %}
+                                            <span class="text-success">{{ item.quantity_received }}</span>
+                                        {% elif item.quantity_received < item.quantity_expected %}
+                                            <span class="text-danger">{{ item.quantity_received }}</span>
+                                        {% else %}
+                                            <span class="text-warning text-dark-emphasis">{{ item.quantity_received }}</span>
+                                        {% endif %}
                                     {% else %}
-                                        <span class="text-warning text-dark-emphasis">
-                                            {{ item.quantity_received }}
-                                        </span>
+                                        <span class="text-muted opacity-25">-</span>
                                     {% endif %}
+                                </td>
 
-                                {% else %}
-                                    <span class="text-muted">-</span>
-                                {% endif %}
-                            </td>
-
-                            <td class="text-end pe-4">
-                                {% if order.status == 'pending' %}
-                                    <span class="badge bg-secondary">Aguardando</span>
-                                {% else %}
-                                    
-                                    {% if item.quantity_received == item.quantity_expected %}
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                            <i class="bi bi-check-lg me-1"></i>OK
-                                        </span>
-                                    
-                                    {% elif item.quantity_received < item.quantity_expected %}
-                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
-                                            <i class="bi bi-arrow-down-short me-1"></i>
-                                            Faltou {{ item.quantity_expected - item.quantity_received }}
-                                        </span>
-                                    
+                                <td class="text-end pe-4">
+                                    {% if order.status == 'pending' %}
+                                        <span class="badge bg-light text-dark border">Aguardando</span>
                                     {% else %}
-                                        <span class="badge bg-warning-subtle text-dark border border-warning-subtle">
-                                            <i class="bi bi-arrow-up-short me-1"></i>
-                                            Sobrou {{ item.quantity_received - item.quantity_expected }}
-                                        </span>
+                                        {% if item.quantity_received == item.quantity_expected %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                                <i class="bi bi-check-lg me-1"></i>OK
+                                            </span>
+                                        {% elif item.quantity_received < item.quantity_expected %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                                <i class="bi bi-arrow-down-short me-1"></i>
+                                                Faltou {{ item.quantity_expected - item.quantity_received }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle">
+                                                <i class="bi bi-arrow-up-short me-1"></i>
+                                                Sobrou {{ item.quantity_received - item.quantity_expected }}
+                                            </span>
+                                        {% endif %}
                                     {% endif %}
-
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="text-center py-5 text-muted">
-                                Nenhum item adicionado ainda.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="text-muted opacity-25 mb-2">
+                                        <i class="bi bi-basket fs-1"></i>
+                                    </div>
+                                    <p class="text-muted fw-bold mb-0">Lista vazia.</p>
+                                    <small class="text-muted">Use o formulário ao lado para adicionar itens.</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+            
+            <div class="card-footer bg-light p-3">
+                <div class="d-grid gap-2">
+                    {% if order.items|length > 0 %}
+                        <a href="{{ url_for('inventory.smart_exit', id=order.id) }}" class="btn btn-success fw-bold py-2">
+                            <i class="bi bi-check-lg me-2"></i>Concluir e Liberar
+                        </a>
+                        <small class="text-muted text-center" style="font-size: 0.75rem;">
+                            Isso disponibiliza a nota para o depósito.
+                        </small>
+                    {% else %}
+                        <a href="{{ url_for('inventory.smart_exit', id=order.id) }}" class="btn btn-outline-danger border-0 py-2">
+                            <i class="bi bi-trash me-2"></i>Cancelar Recebimento
+                        </a>
+                        <small class="text-muted text-center" style="font-size: 0.75rem;">
+                            Nenhum item adicionado. O pedido será excluído.
+                        </small>
+                    {% endif %}
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
+
+<audio id="alertSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let currentPending = {{ pending_orders_count if pending_orders_count else 0 }};
+        let lastPending = localStorage.getItem('lastPendingCount');
+
+        if (currentPending > 0 && currentPending > (lastPending || 0)) {
+            let audio = document.getElementById('alertSound');
+            audio.play().catch(e => console.log("Áudio bloqueado pelo navegador até primeira interação"));
+            alert("🔔 Atenção: Novo Recebimento Disponível para Conferência!");
+        }
+
+        localStorage.setItem('lastPendingCount', currentPending);
+
+        setTimeout(function() {
+            window.location.reload();
+        }, 30000); 
+    });
+</script>
 {% endblock %}

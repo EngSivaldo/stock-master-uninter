@@ -47,6 +47,11 @@
                             <a href="{{ url_for('inventory.order_details', id=order.id) }}" class="btn btn-sm btn-light border text-muted ms-1" title="Editar Nota">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <form action="{{ url_for('inventory.delete_order', id=order.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este recebimento?');" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                             {% endif %}
                         
                         {% else %}
