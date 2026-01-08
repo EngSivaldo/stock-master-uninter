@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block page_title %}Detalhes do Recebimento #{{ order.id }}{% endblock %}
+{% block page_subtitle %}Monte a lista do que deve chegar no caminhão.{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-bold">Adicionar Item Esperado</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Produto</label>
+                        <select name="product_id" class="form-select" required>
+                            <option value="">Selecione...</option>
+                            {% for p in products %}
+                            <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text small">Mostrando apenas produtos deste fornecedor.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Quantidade da Nota</label>
+                        <input type="number" name="quantity" class="form-control" placeholder="Ex: 500" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Adicionar à Lista</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="d-grid mt-3">
+            <a href="{{ url_for('inventory.orders_list') }}" class="btn btn-light border">Voltar para Lista</a>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">Itens no Aviso de Recebimento</h6>
+                <span class="badge bg-warning text-dark">Status: {{ order.status|upper }}</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table align-middle mb-0">
+                    <thead class="bg-light small text-uppercase">
+                        <tr>
+                            <th class="ps-4">Produto</th>
+                            <th class="text-center">Qtd. Nota</th>
+                            <th class="text-center">Qtd. Conferida</th>
+                            <th class="text-end pe-4">Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items %}
+                        <tr>
+                            <td class="ps-4 fw-medium">
+                                {{ item.product.name }}
+                                <div class="small text-muted">{{ item.product.sku }}</div>
+                            </td>
+                            
+                            <td class="text-center fw-bold fs-5 text-muted opacity-75">
+                                {{ item.quantity_expected }}
+                            </td>
+                            
+                            <td class="text-center fw-bold fs-5">
+                                {% if order.status == 'completed' %}
+                                    
+                                    {% if item.quantity_received == item.quantity_expected %}
+                                        <span class="text-success">{{ item.quantity_received }}</span>
+                                    
+                                    {% elif item.quantity_received < item.quantity_expected %}
+                                        <span class="text-danger">
+                                            {{ item.quantity_received }}
+                                        </span>
+                                    
+                                    {% else %}
+                                        <span class="text-warning text-dark-emphasis">
+                                            {{ item.quantity_received }}
+                                        </span>
+                                    {% endif %}
+
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end pe-4">
+                                {% if order.status == 'pending' %}
+                                    <span class="badge bg-secondary">Aguardando</span>
+                                {% else %}
+                                    
+                                    {% if item.quantity_received == item.quantity_expected %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                            <i class="bi bi-check-lg me-1"></i>OK
+                                        </span>
+                                    
+                                    {% elif item.quantity_received < item.quantity_expected %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                            <i class="bi bi-arrow-down-short me-1"></i>
+                                            Faltou {{ item.quantity_expected - item.quantity_received }}
+                                        </span>
+                                    
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-dark border border-warning-subtle">
+                                            <i class="bi bi-arrow-up-short me-1"></i>
+                                            Sobrou {{ item.quantity_received - item.quantity_expected }}
+                                        </span>
+                                    {% endif %}
+
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                Nenhum item adicionado ainda.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

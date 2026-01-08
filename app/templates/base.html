@@ -39,6 +39,10 @@
                 <i class="bi bi-arrow-left-right"></i> Movimentações
             </a>
 
+            <a href="{{ url_for('inventory.orders_list') }}" class="nav-link {% if 'orders' in request.endpoint %}active{% endif %}">
+                <i class="bi bi-truck"></i> Recebimento (Notas)
+            </a>
+
             <a href="{{ url_for('main.report') }}" class="nav-link {% if request.endpoint == 'main.report' %}active{% endif %}">
                 <i class="bi bi-bar-chart-fill"></i> Relatórios
             </a>

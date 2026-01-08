@@ -21,29 +21,22 @@ class User(UserMixin, db.Model):
 
 class Supplier(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    
-    # Dados Principais
     name = db.Column(db.String(100), nullable=False)
     cnpj = db.Column(db.String(20), unique=True)
-    
-    # Contato
     contact_name = db.Column(db.String(100))
     email = db.Column(db.String(100))
     phone = db.Column(db.String(20))
-    
-    # Endereço
     address = db.Column(db.String(200))
     city = db.Column(db.String(100))
     state = db.Column(db.String(2))
     
     products = db.relationship('Product', backref='supplier', lazy=True)
+    # Relacionamento com Pedidos (Novo)
+    orders = db.relationship('PurchaseOrder', backref='supplier', lazy=True)
 
-# CLASSE CATEGORIA (Movida para cima para evitar erro de referência, se necessário)
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
-    
-    # Relacionamento
     products = db.relationship('Product', backref='category', lazy=True)
 
     def __repr__(self):
@@ -58,16 +51,15 @@ class Product(db.Model):
     cost = db.Column(db.Float, default=0.0)
     price = db.Column(db.Float, default=0.0)
     
-    # --- CORREÇÃO AQUI (Sem a vírgula no final) ---
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
-    # ----------------------------------------------
-    
     supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'), nullable=False)
+    
     image_file = db.Column(db.String(100), nullable=True, default='default.jpg')
-    # NOVA COLUNA: Soft Delete
-    # default=True significa que todo produto novo nasce "Ativo"
     active = db.Column(db.Boolean, default=True, server_default="1", nullable=False)
+    
     movements = db.relationship('Movement', backref='product', lazy=True)
+    # Relacionamento com Itens de Pedido (Novo)
+    order_items = db.relationship('PurchaseOrderItem', backref='product', lazy=True)
 
 class Movement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -79,3 +71,49 @@ class Movement(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
 
     user = db.relationship('User', backref='movements')
+
+
+# --- NOVAS TABELAS PARA CONFERÊNCIA DE RECEBIMENTO ---
+
+class PurchaseOrder(db.Model):
+    """
+    Representa o Cabeçalho da Nota Fiscal ou Pedido.
+    Ex: NF 1234 da Ambev, status 'Pendente'.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Identificação
+    invoice_number = db.Column(db.String(50)) # Número da Nota Fiscal
+    supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'), nullable=False)
+    
+    # Status do Processo
+    # 'pending' = Criado pelo Admin, aguardando caminhão.
+    # 'completed' = Conferido pelo funcionário e estoque atualizado.
+    status = db.Column(db.String(20), default='pending', nullable=False)
+    
+    # Datas e Responsáveis
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.now)
+    
+    # Quem criou (Admin)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Itens deste pedido
+    items = db.relationship('PurchaseOrderItem', backref='order', lazy=True, cascade="all, delete-orphan")
+
+class PurchaseOrderItem(db.Model):
+    """
+    Representa cada linha do pedido.
+    Ex: Skol Lata - Esperado: 500 - Recebido: 500
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    
+    purchase_order_id = db.Column(db.Integer, db.ForeignKey('purchase_order.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    
+    # O Pulo do Gato da Conferência:
+    quantity_expected = db.Column(db.Integer, nullable=False) # Quanto o Admin digitou (Nota Fiscal)
+    quantity_received = db.Column(db.Integer, default=0)      # Quanto o funcionário contou no caminhão
+    
+    # Custo unitário nesta nota específica (pode variar da tabela de produtos)
+    unit_cost = db.Column(db.Float, default=0.0)

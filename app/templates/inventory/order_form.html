@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block page_title %}Novo Recebimento{% endblock %}
+{% block page_subtitle %}Cadastre a Nota Fiscal que vai chegar para conferência.{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card border-0 shadow-sm">
+            
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-dark">
+                    <i class="bi bi-file-earmark-text me-2"></i>Dados da Nota Fiscal
+                </h6>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST">
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Fornecedor</label>
+                        <select name="supplier_id" class="form-select" required autofocus>
+                            <option value="" selected disabled>Selecione de quem comprou...</option>
+                            {% for s in suppliers %}
+                            <option value="{{ s.id }}">{{ s.name }} (CNPJ: {{ s.cnpj }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Número da Nota / Pedido</label>
+                        <input type="text" name="invoice_number" class="form-control" placeholder="Ex: NF-e 000.452" required>
+                        <div class="form-text">
+                            Isso ajudará o funcionário do depósito a identificar qual caminhão conferir.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary shadow-sm">
+                            Continuar para Itens <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                        <a href="{{ url_for('inventory.orders_list') }}" class="btn btn-light border text-muted">
+                            Cancelar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

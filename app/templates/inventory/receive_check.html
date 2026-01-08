@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block page_title %}Conferência de Entrada{% endblock %}
+{% block page_subtitle %}Confira os itens físicos com a Nota Fiscal.{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body bg-light border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-uppercase text-muted fw-bold">Fornecedor</small>
+                        <h5 class="mb-0 fw-bold text-dark">{{ order.supplier.name }}</h5>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-uppercase text-muted fw-bold">Nota / Pedido</small>
+                        <h5 class="mb-0 fw-bold text-primary">{{ order.invoice_number }}</h5>
+                    </div>
+                </div>
+            </div>
+
+            <form method="POST" onsubmit="return confirm('Confirmar a entrada desses itens no estoque?');">
+                <div class="list-group list-group-flush">
+                    
+                    {% for item in order.items %}
+                    <div class="list-group-item p-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <span class="badge bg-secondary mb-1">{{ item.product.sku }}</span>
+                                <div class="fw-bold text-dark">{{ item.product.name }}</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center justify-content-end gap-2">
+                                    <div class="text-end me-2">
+                                        <small class="d-block text-muted" style="font-size: 0.7rem;">ESPERADO</small>
+                                        <span class="fw-bold fs-5">{{ item.quantity_expected }}</span>
+                                    </div>
+
+                                    <div style="width: 140px;">
+                                        <small class="d-block text-muted mb-1" style="font-size: 0.7rem;">CONTAGEM REAL</small>
+                                        <div class="input-group">
+                                            <input type="number" 
+                                                   name="received_{{ item.id }}" 
+                                                   class="form-control fw-bold text-center text-primary" 
+                                                   value="{{ item.quantity_expected }}" 
+                                                   min="0" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+                <div class="card-footer bg-white p-4">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg py-3 shadow-sm">
+                            <i class="bi bi-check-circle-fill me-2"></i> FINALIZAR E ATUALIZAR ESTOQUE
+                        </button>
+                        <a href="{{ url_for('inventory.orders_list') }}" class="btn btn-light border py-2">Cancelar</a>
+                    </div>
+                    <div class="text-center mt-2 text-muted small">
+                        Isso irá somar as quantidades ao estoque atual.
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
