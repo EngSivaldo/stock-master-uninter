@@ -110,11 +110,18 @@
                 <tr>
                     <td class="ps-4">
                         <div class="d-flex align-items-center">
-                            <div class="bg-light rounded p-2 me-2 text-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                <i class="bi bi-box small"></i>
+                            
+                            <div class="me-3 d-flex align-items-center justify-content-center bg-light rounded overflow-hidden border" 
+                                 style="width: 42px; height: 42px; min-width: 42px;">
+                                {% if p.image_file and p.image_file != 'default.jpg' %}
+                                    <img src="{{ url_for('static', filename='uploads/' + p.image_file) }}" 
+                                         alt="{{ p.name }}" class="w-100 h-100 object-fit-cover">
+                                {% else %}
+                                    <i class="bi bi-box text-secondary"></i>
+                                {% endif %}
                             </div>
-                            <div>
-                                <div class="fw-bold text-dark text-truncate-mobile" title="{{ p.name }}">
+
+                            <div style="min-width: 0;"> <div class="fw-bold text-dark text-truncate-mobile" title="{{ p.name }}">
                                     {{ p.name }}
                                 </div>
                                 <div class="d-flex align-items-center gap-2" style="font-size: 0.7rem;">

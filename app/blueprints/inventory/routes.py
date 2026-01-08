@@ -4,6 +4,10 @@ from app.models import Product, Movement, Supplier, Category, User
 from app.decorators import admin_required
 from datetime import datetime  
 from app.extensions import db
+import os
+import secrets
+from flask import current_app # Para acessar a config da pasta
+from werkzeug.utils import secure_filename
 
 inventory_bp = Blueprint('inventory', __name__)
 
@@ -35,6 +39,20 @@ def index():
                          products=products_pagination, # Passamos o objeto paginador
                          now=formatted_date,
                          search_query=search_query)
+
+def save_picture(form_picture):
+    # Gera um nome aleatório (ex: a1b2c3d4.jpg)
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    
+    # Cria o caminho completo
+    picture_path = os.path.join(current_app.config['UPLOAD_FOLDER'], picture_fn)
+    
+    # Salva o arquivo
+    form_picture.save(picture_path)
+    
+    return picture_fn
 
 @inventory_bp.route('/movement/new', methods=['GET', 'POST'])
 @login_required
@@ -115,6 +133,14 @@ def add_product():
         if existing_product:
             flash(f'Erro: O SKU {sku} já está cadastrado.', 'danger')
             return redirect(url_for('inventory.add_product'))
+        
+            
+        # TRATAMENTO DA IMAGEM
+        image_file = None # Começa vazio
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename != '':
+                image_file = save_picture(file) # Usa nossa função
             
         # Criação do Objeto Produto
         # Nota: Começamos com quantity=0. O correto é dar entrada via Movimentação depois.
@@ -126,7 +152,8 @@ def add_product():
             min_level=min_level,
             cost=cost,   
             price=price,
-            quantity=0 
+            quantity=0,
+            image_file=image_file
         )
         
         try:
@@ -138,7 +165,7 @@ def add_product():
             db.session.rollback()
             flash(f'Erro ao cadastrar: {str(e)}', 'danger')
             
-    return render_template('inventory/product_form.html', suppliers=suppliers)
+    return render_template('inventory/product_form.html', suppliers=suppliers, categories=categories)
 
 
 # ... (códigos anteriores)
@@ -162,6 +189,13 @@ def edit_product(id):
         product.cost = float(request.form.get('cost'))
         product.price = float(request.form.get('price'))
         
+        # TRATAMENTO DA IMAGEM (Atualização)
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename != '':
+                # (Opcional: Poderíamos deletar a foto antiga aqui para economizar espaço)
+                product.image_file = save_picture(file)
+        
         # Nota Sênior: Não alteramos a 'quantity' aqui! 
         # Estoque só se mexe via Movimentação (Entrada/Saída). Isso garante rastreabilidade.
         
@@ -174,7 +208,7 @@ def edit_product(id):
             flash(f'Erro ao atualizar: {str(e)}', 'danger')
             
     # Renderizamos o MESMO formulário de criação, mas passando o objeto 'product' para preencher os campos
-    return render_template('inventory/product_form.html', suppliers=suppliers, product=product)
+    return render_template('inventory/product_form.html', suppliers=suppliers, categories=categories, product=product)
 
 # No topo do arquivo, garanta que Movement está importado
 # from app.models import Product, Movement, Supplier

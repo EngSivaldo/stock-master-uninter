@@ -1,49 +1,42 @@
 from flask import render_template, Response
 from flask_login import login_required
-from app.models import Product, Supplier, Movement
+from app.models import Product, Supplier, Movement, Category
 from . import main_bp
 from app.extensions import db
 import csv
 import io
 
-
-from flask import render_template, Response
-from flask_login import login_required
-from app.models import Product, Supplier, Movement
-from . import main_bp
-from app.extensions import db
-import csv
-import io
 
 @main_bp.route('/')
 @login_required
 def report():
-    # 1. Dados Gerais
     products = Product.query.all()
+    
+    # 1. KPIs Gerais
     total_items = len(products)
-    
-    # 2. Cálculo Financeiro (Custo Total do Estoque)
-    # Soma (Quantidade * Preço de Custo) de cada produto
-    total_cost = sum(p.quantity * p.cost for p in products)
-    
-    # Soma (Quantidade * Preço de Venda) - Valor potencial de venda
-    total_revenue_potential = sum(p.quantity * p.price for p in products)
-
-    # 3. Produtos com Estoque Baixo (Alerta)
+    total_cost = sum(p.cost * p.quantity for p in products)
+    total_revenue_potential = sum(p.price * p.quantity for p in products)
     low_stock_products = [p for p in products if p.quantity <= p.min_level]
 
-    # 4. Dados para o Gráfico (Top 5 Fornecedores por Quantidade de Produtos)
-    # Isso é um pouco de "Magia SQL" feita em Python para simplificar
-    suppliers = Supplier.query.all()
+    # 2. DADOS DO GRÁFICO (AGORA POR CATEGORIA 🏷️)
+    # Fazemos uma query agrupada: Nome da Categoria + Soma do Custo do Estoque
+    category_data = db.session.query(
+        Category.name, 
+        db.func.sum(Product.quantity * Product.cost)
+    ).join(Product).group_by(Category.name).all()
+
+    # Prepara as listas para o Chart.js
     chart_labels = []
     chart_data = []
-    
-    for s in suppliers:
-        # Conta quantos produtos esse fornecedor tem cadastrados
-        qtd_prods = len(s.products) 
-        if qtd_prods > 0:
-            chart_labels.append(s.name)
-            chart_data.append(qtd_prods)
+
+    for name, value in category_data:
+        chart_labels.append(name) # Ex: 'Eletrônicos'
+        chart_data.append(float(value)) # Ex: 15000.00
+        
+    # Se não tiver dados (banco vazio), evita erro no gráfico
+    if not chart_data:
+        chart_labels = ["Sem dados"]
+        chart_data = [0]
 
     return render_template('main/report.html', 
                          products=products,
@@ -51,8 +44,8 @@ def report():
                          total_cost=total_cost,
                          total_revenue_potential=total_revenue_potential,
                          low_stock_products=low_stock_products,
-                         chart_labels=chart_labels,
-                         chart_data=chart_data)
+                         chart_labels=chart_labels, # Passando labels de Categoria
+                         chart_data=chart_data)     #
 
 # --- ROTA EXTRA: Exportar para Excel (CSV) ---
 @main_bp.route('/export/csv')

@@ -63,7 +63,7 @@ class Product(db.Model):
     # ----------------------------------------------
     
     supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'), nullable=False)
-    
+    image_file = db.Column(db.String(100), nullable=True, default='default.jpg')
     movements = db.relationship('Movement', backref='product', lazy=True)
 
 class Movement(db.Model):

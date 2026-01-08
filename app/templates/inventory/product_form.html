@@ -1,25 +1,17 @@
 {% extends "base.html" %}
 
+{% block page_title %}
+    {{ 'Editar Produto' if product else 'Novo Produto' }}
+{% endblock %}
+
+{% block page_subtitle %}
+    {{ 'Atualize os dados e foto do item.' if product else 'Cadastre um novo item no estoque.' }}
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-0">
-    
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{{ url_for('inventory.index') }}" class="text-decoration-none">Estoque</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        {{ 'Edição' if product else 'Cadastro' }}
-                    </li>
-                </ol>
-            </nav>
-            <h2 class="fw-bold text-dark mb-0">
-                {{ 'Editar Produto' if product else 'Novo Produto' }}
-            </h2>
-        </div>
-    </div>
 
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         <div class="row g-4">
             
             <div class="col-lg-8">
@@ -29,38 +21,60 @@
                     </div>
                     <div class="card-body p-4">
                         
+                        <div class="mb-4 text-center p-3 bg-light rounded border border-dashed">
+                            <label class="form-label d-block fw-bold text-muted small text-uppercase mb-3">Foto do Produto</label>
+                            
+                            {% if product and product.image_file and product.image_file != 'default.jpg' %}
+                                <div class="mb-3 position-relative d-inline-block">
+                                    <img src="{{ url_for('static', filename='uploads/' + product.image_file) }}" 
+                                         class="img-thumbnail rounded shadow-sm" 
+                                         style="max-height: 150px; object-fit: cover;">
+                                </div>
+                            {% else %}
+                                <div class="mb-3 text-muted opacity-50">
+                                    <i class="bi bi-image fs-1"></i>
+                                    <div class="small">Sem foto</div>
+                                </div>
+                            {% endif %}
+
+                            <input type="file" name="image" class="form-control form-control-sm w-75 mx-auto" accept="image/*">
+                            <div class="form-text small mt-1">Formatos aceitos: JPG, PNG (Max 5MB).</div>
+                        </div>
+
                         <div class="mb-4">
                             <label class="form-label text-uppercase text-muted small fw-bold">Nome do Item</label>
                             <input type="text" id="nameInput" name="name" class="form-control form-control-lg fw-bold" 
                                    placeholder="Ex: Cimento CP II 50kg"
                                    value="{{ product.name if product else '' }}" required onkeyup="updateSmartSku()">
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted text-uppercase">Categoria</label>
-                            <select name="category_id" class="form-select" required>
-                                <option value="" disabled {% if not product %}selected{% endif %}>Selecione uma categoria...</option>
-                                {% for c in categories %}
-                                    <option value="{{ c.id }}" {% if product and product.category_id == c.id %}selected{% endif %}>
-                                        {{ c.name }}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Categoria</label>
+                                <select name="category_id" class="form-select" required>
+                                    <option value="" disabled {% if not product %}selected{% endif %}>Selecione...</option>
+                                    {% for c in categories %}
+                                        <option value="{{ c.id }}" {% if product and product.category_id == c.id %}selected{% endif %}>
+                                            {{ c.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Fornecedor</label>
+                                <select name="supplier_id" id="supplierInput" class="form-select" required onchange="updateSmartSku()">
+                                    <option value="">Selecione...</option>
+                                    {% for s in suppliers %}
+                                    <option value="{{ s.id }}" data-name="{{ s.name }}" 
+                                        {% if product and product.supplier_id == s.id %}selected{% endif %}>
+                                        {{ s.name }}
                                     </option>
-                                {% endfor %}
-                            </select>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label text-uppercase text-muted small fw-bold">Fornecedor Principal</label>
-                            <select name="supplier_id" id="supplierInput" class="form-select" required onchange="updateSmartSku()">
-                                <option value="">Selecione o parceiro...</option>
-                                {% for s in suppliers %}
-                                <option value="{{ s.id }}" data-name="{{ s.name }}" 
-                                    {% if product and product.supplier_id == s.id %}selected{% endif %}>
-                                    {{ s.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="bg-light p-4 rounded-3 border">
+                        <div class="bg-light p-4 rounded-3 border mt-3">
                             {% if not product %}
                                 <label class="form-label text-uppercase text-muted small fw-bold mb-3">Definição de Código (SKU)</label>
                                 <div class="row g-3 mb-3">
@@ -71,7 +85,7 @@
                                                 <i class="bi bi-upc-scan fs-3 me-3"></i>
                                                 <div>
                                                     <div class="fw-bold">Código de Barras</div>
-                                                    <div class="small text-muted" style="font-size: 0.75rem;">Digitar ou usar leitor EAN</div>
+                                                    <div class="small text-muted" style="font-size: 0.75rem;">Digitar ou usar leitor</div>
                                                 </div>
                                             </div>
                                         </label>
@@ -83,7 +97,7 @@
                                                 <i class="bi bi-magic fs-3 me-3"></i>
                                                 <div>
                                                     <div class="fw-bold">Smart SKU</div>
-                                                    <div class="small" style="font-size: 0.75rem;">Gerar automaticamente</div>
+                                                    <div class="small" style="font-size: 0.75rem;">Gerar auto</div>
                                                 </div>
                                             </div>
                                         </label>
@@ -94,7 +108,6 @@
                                     <span class="input-group-text bg-white border-end-0"><i class="bi bi-upc"></i></span>
                                     <input type="text" id="skuInput" name="sku" class="form-control border-start-0 ps-0" placeholder="Aguardando dados..." required>
                                 </div>
-                                <div class="form-text mt-2" id="skuHelp">Selecione o modo acima.</div>
                             
                             {% else %}
                                 <div class="d-flex align-items-center justify-content-between">
@@ -169,7 +182,6 @@
         
         const isSmart = modeSmart.checked;
         const skuInput = document.getElementById('skuInput');
-        const skuHelp = document.getElementById('skuHelp');
 
         if (isSmart) {
             skuInput.setAttribute('readonly', true);
