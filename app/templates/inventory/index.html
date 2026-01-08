@@ -165,6 +165,12 @@
                             <a href="{{ url_for('inventory.edit_product', id=p.id) }}" class="btn btn-light border text-muted" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <a href="{{ url_for('inventory.delete_product', id=p.id) }}" 
+                            class="btn btn-light border text-danger" 
+                            title="Arquivar/Excluir"
+                             onclick="return confirm('Tem certeza? O produto será arquivado, mas o histórico financeiro será mantido.')">
+                        <i class="bi bi-trash"></i>
+                           </a>
                             {% endif %}
                         </div>
                     </td>

@@ -64,6 +64,9 @@ class Product(db.Model):
     
     supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'), nullable=False)
     image_file = db.Column(db.String(100), nullable=True, default='default.jpg')
+    # NOVA COLUNA: Soft Delete
+    # default=True significa que todo produto novo nasce "Ativo"
+    active = db.Column(db.Boolean, default=True, server_default="1", nullable=False)
     movements = db.relationship('Movement', backref='product', lazy=True)
 
 class Movement(db.Model):

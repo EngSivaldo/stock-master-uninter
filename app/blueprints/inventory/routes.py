@@ -18,10 +18,9 @@ def index():
     search_query = request.args.get('q', '')
     page = request.args.get('page', 1, type=int) # Padrão é página 1
     per_page = 10 # Produtos por página (mude para testar, ex: 2)
-    
-    # 2. Monta a Query BASE (sem executar ainda)
-    query = Product.query
 
+    # Começamos filtrando apenas os produtos ATIVOS
+    query = Product.query.filter_by(active=True)
     # 3. Aplica filtro de busca se existir
     if search_query:
         query = query.filter(
@@ -287,3 +286,23 @@ def edit_supplier(id):
             flash('Erro ao atualizar. Verifique se o CNPJ já existe.', 'danger')
         
     return render_template('inventory/supplier_form.html', supplier=supplier)
+
+
+@inventory_bp.route('/product/delete/<int:id>')
+@login_required
+@admin_required # Segurança: Só admin pode arquivar
+def delete_product(id):
+    product = Product.query.get_or_404(id)
+    
+    # A MÁGICA DO SOFT DELETE ✨
+    # Em vez de db.session.delete(product), fazemos isso:
+    product.active = False
+    
+    try:
+        db.session.commit()
+        flash(f'Produto "{product.name}" foi arquivado com sucesso.', 'success')
+    except:
+        db.session.rollback()
+        flash('Erro ao arquivar produto.', 'danger')
+        
+    return redirect(url_for('inventory.index'))
