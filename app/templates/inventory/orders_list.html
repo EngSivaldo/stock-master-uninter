@@ -1,71 +1,137 @@
 {% extends "base.html" %}
+
 {% block page_title %}Gestão de Compras{% endblock %}
 {% block page_subtitle %}Monitore o recebimento de mercadorias.{% endblock %}
 
 {% block content %}
 <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h6 class="fw-bold mb-0">Pedidos de Compra / Recebimento</h6>
-        <a href="{{ url_for('inventory.new_order') }}" class="btn btn-primary btn-sm">
+    <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+        <h6 class="mb-0 fw-bold text-dark">Pedidos de Compra / Recebimento</h6>
+        
+        <a href="{{ url_for('inventory.new_order') }}" class="btn btn-primary shadow-sm w-100 w-md-auto">
             <i class="bi bi-plus-lg me-2"></i>Novo Aviso de Chegada
         </a>
     </div>
-    <div class="card-body p-0">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="bg-light text-muted small text-uppercase">
+
+    <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+            <thead class="bg-light small text-uppercase text-muted">
                 <tr>
-                    <th class="ps-4">ID</th>
-                    <th>Nota Fiscal</th>
-                    <th>Fornecedor</th>
-                    <th>Status</th>
-                    <th>Data</th>
-                    <th class="text-end pe-4">Ações</th>
+                    <th class="ps-4 d-none d-lg-table-cell" style="width: 5%;">ID</th>
+                    
+                    <th class="d-none d-md-table-cell" style="width: 15%;">Nota</th>
+                    
+                    <th style="width: 40%;">Fornecedor / Info</th>
+                    
+                    <th class="text-center" style="width: 20%;">Status</th>
+                    
+                    <th class="d-none d-lg-table-cell" style="width: 10%;">Data</th>
+                    
+                    <th class="text-end pe-4" style="width: 10%;">Ação</th>
                 </tr>
             </thead>
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td class="ps-4 font-monospace">#{{ order.id }}</td>
-                    <td class="fw-bold">{{ order.invoice_number }}</td>
-                    <td>{{ order.supplier.name }}</td>
-                    <td>
-                        {% if order.status == 'pending' %}
-                        <span class="badge bg-warning text-dark">Aguardando Caminhão</span>
-                        {% else %}
-                        <span class="badge bg-success">Concluído</span>
-                        {% endif %}
-                    </td>
-                    <td class="text-muted small">{{ order.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td class="ps-4 d-none d-lg-table-cell text-muted">#{{ order.id }}</td>
                     
-                    <td class="text-end pe-4">
-                        {% if order.status == 'pending' %}
-                            <a href="{{ url_for('inventory.receive_check', id=order.id) }}" class="btn btn-sm btn-primary shadow-sm" title="Realizar conferência de entrada">
-                                <i class="bi bi-clipboard-check me-2"></i>Conferir Entrada
-                            </a>
-                            
-                            {% if current_user.role == 'admin' %}
-                            <a href="{{ url_for('inventory.order_details', id=order.id) }}" class="btn btn-sm btn-light border text-muted ms-1" title="Editar Nota">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form action="{{ url_for('inventory.delete_order', id=order.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este recebimento?');" style="display:inline;">
-                                <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Excluir">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                    <td class="d-none d-md-table-cell fw-bold text-dark">{{ order.invoice_number }}</td>
+                    
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {% if order.supplier.logo %}
+                                <img src="{{ url_for('static', filename='uploads/suppliers/' + order.supplier.logo) }}" 
+                                     class="rounded-circle me-2 border d-none d-sm-block" 
+                                     style="width: 32px; height: 32px; object-fit: cover;">
                             {% endif %}
-                        
+                            
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold text-dark text-truncate" style="max-width: 140px;">
+                                    {{ order.supplier.name }}
+                                </span>
+                                <span class="small text-muted d-md-none">
+                                    <i class="bi bi-receipt me-1"></i>Nota: {{ order.invoice_number }}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="text-center">
+                        {% if order.status == 'pending' %}
+                            <span class="badge bg-warning text-dark border border-warning-subtle" title="Aguardando">
+                                <i class="bi bi-clock-history"></i> <span class="d-none d-sm-inline">Pend.</span>
+                            </span>
                         {% else %}
-                            <span class="text-success small fw-bold me-2"><i class="bi bi-check-all"></i> Finalizado</span>
-                            <a href="{{ url_for('inventory.order_details', id=order.id) }}" class="btn btn-sm btn-light border" title="Ver Detalhes">
-                                Ver
-                            </a>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="bi bi-check"></i> <span class="d-none d-sm-inline">OK</span>
+                            </span>
                         {% endif %}
                     </td>
 
+                    <td class="d-none d-lg-table-cell text-muted small">
+                        {{ order.created_at.strftime('%d/%m') }}
+                    </td>
+
+                    <td class="text-end pe-4">
+                        {% if order.status == 'pending' %}
+                            
+                            <div class="d-flex justify-content-end gap-1">
+                                <a href="{{ url_for('inventory.receive_check', id=order.id) }}" 
+                                   class="btn btn-primary shadow-sm px-3" 
+                                   title="Conferir Entrada">
+                                    <i class="bi bi-box-seam"></i> 
+                                    <span class="d-none d-sm-inline ms-1">Conferir</span>
+                                </a>
+                                
+                                {% if current_user.role == 'admin' %}
+                                    <div class="d-none d-md-flex gap-1">
+                                        <a href="{{ url_for('inventory.order_details', id=order.id) }}" class="btn btn-sm btn-light border text-muted">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ url_for('inventory.delete_order', id=order.id) }}" method="POST" onsubmit="return confirm('Tem certeza?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                        {% else %}
+                            <a href="{{ url_for('inventory.order_details', id=order.id) }}" class="btn btn-sm btn-light border">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <p class="text-muted fw-medium">Nenhum pedido.</p>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<audio id="alertSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lógica de refresh automático mantida para funcionar o alerta
+        let currentPending = {{ pending_orders_count if pending_orders_count else 0 }};
+        let lastPending = localStorage.getItem('lastPendingCount');
+
+        if (currentPending > 0 && currentPending > (lastPending || 0)) {
+            let audio = document.getElementById('alertSound');
+            audio.play().catch(e => console.log("Áudio bloqueado"));
+        }
+        localStorage.setItem('lastPendingCount', currentPending);
+        
+        // Refresh a cada 30s
+        setTimeout(function() { window.location.reload(); }, 30000);
+    });
+</script>
 {% endblock %}

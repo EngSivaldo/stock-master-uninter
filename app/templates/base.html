@@ -160,5 +160,27 @@
         }
     </script>
     {% block scripts %}{% endblock %}
+    <div class="sidebar-overlay"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // IDs dos teus elementos
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        // Botão que abre o menu no mobile (crie um botão com id="sidebarCollapse")
+        const sidebarBtn = document.getElementById('sidebarCollapse'); 
+        // Botão X dentro do menu para fechar (opcional)
+        const closeBtn = document.querySelector('.sidebar-close-btn');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        if(sidebarBtn) sidebarBtn.addEventListener('click', toggleMenu);
+        if(overlay) overlay.addEventListener('click', toggleMenu);
+        if(closeBtn) closeBtn.addEventListener('click', toggleMenu);
+    });
+</script>
 </body>
 </html>

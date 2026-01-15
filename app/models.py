@@ -20,6 +20,7 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
 class Supplier(db.Model):
+    # ... (seus campos existentes)
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     cnpj = db.Column(db.String(20), unique=True)
@@ -30,8 +31,11 @@ class Supplier(db.Model):
     city = db.Column(db.String(100))
     state = db.Column(db.String(2))
     
+    # --- NOVO CAMPO PARA A IMAGEM ---
+    logo = db.Column(db.String(150), nullable=True) 
+    # --------------------------------
+
     products = db.relationship('Product', backref='supplier', lazy=True)
-    # Relacionamento com Pedidos (Novo)
     orders = db.relationship('PurchaseOrder', backref='supplier', lazy=True)
 
 class Category(db.Model):

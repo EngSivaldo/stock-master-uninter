@@ -266,7 +266,7 @@ def suppliers_list():
 @login_required
 def add_supplier():
     if request.method == 'POST':
-        # Captura todos os campos do form completo
+        # 1. Captura os dados de texto
         data = {
             'name': request.form.get('name'),
             'cnpj': request.form.get('cnpj'),
@@ -278,26 +278,49 @@ def add_supplier():
             'state': request.form.get('state')
         }
         
-        # Cria o objeto desempacotando o dicionário (**data)
+        # 2. Lógica de Upload da Imagem (Igual ao Editar)
+        filename = None
+        if 'logo' in request.files:
+            file = request.files['logo']
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                
+                # Define pasta
+                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'suppliers')
+                
+                # Cria pasta se não existir
+                if not os.path.exists(upload_folder):
+                    os.makedirs(upload_folder)
+                
+                # Salva
+                file.save(os.path.join(upload_folder, filename))
+
+        # 3. Adiciona o nome do arquivo ao dicionário de dados
+        data['logo'] = filename
+        
+        # Cria o objeto já com a logo
         supplier = Supplier(**data)
         
         try:
             db.session.add(supplier)
             db.session.commit()
-            flash(f'Fornecedor {data["name"]} cadastrado!', 'success')
+            flash(f'Fornecedor {data["name"]} cadastrado com sucesso!', 'success')
             return redirect(url_for('inventory.suppliers_list'))
-        except:
+        except Exception as e:
             db.session.rollback()
-            flash('Erro: CNPJ já cadastrado ou dados inválidos.', 'danger')
+            # Mostra o erro real para facilitar o debug (pode remover o str(e) depois)
+            flash(f'Erro ao cadastrar: {str(e)}', 'danger')
         
-    return render_template('inventory/supplier_form.html', supplier=None)
+    # 4. MUDANÇA IMPORTANTE: Aponta para o novo arquivo único
+    return render_template('inventory/edit_supplier.html', supplier=None)
 
 @inventory_bp.route('/suppliers/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_supplier(id):
     supplier = Supplier.query.get_or_404(id)
-    
+
     if request.method == 'POST':
+        # Atualiza os dados de texto
         supplier.name = request.form.get('name')
         supplier.cnpj = request.form.get('cnpj')
         supplier.contact_name = request.form.get('contact_name')
@@ -306,17 +329,38 @@ def edit_supplier(id):
         supplier.address = request.form.get('address')
         supplier.city = request.form.get('city')
         supplier.state = request.form.get('state')
-        
+
+        # --- LÓGICA DE UPLOAD DE IMAGEM ---
+        if 'logo' in request.files:
+            file = request.files['logo']
+            
+            # Verifica se o arquivo existe e tem nome
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                
+                # Define pasta: app/static/uploads/suppliers
+                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'suppliers')
+                
+                # Cria a pasta se não existir
+                if not os.path.exists(upload_folder):
+                    os.makedirs(upload_folder)
+                
+                # Salva o arquivo fisicamente
+                file.save(os.path.join(upload_folder, filename))
+                
+                # Salva o NOME do arquivo no banco
+                supplier.logo = filename
+        # ----------------------------------
+
         try:
             db.session.commit()
-            flash('Dados atualizados com sucesso.', 'success')
+            flash('Fornecedor atualizado com sucesso!', 'success')
             return redirect(url_for('inventory.suppliers_list'))
-        except:
+        except Exception as e:
             db.session.rollback()
-            flash('Erro ao atualizar. Verifique se o CNPJ já existe.', 'danger')
-        
-    return render_template('inventory/supplier_form.html', supplier=supplier)
+            flash(f'Erro ao atualizar: {str(e)}', 'danger')
 
+    return render_template('inventory/edit_supplier.html', supplier=supplier)
 
 @inventory_bp.route('/product/delete/<int:id>')
 @login_required
