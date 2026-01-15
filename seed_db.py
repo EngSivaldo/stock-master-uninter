@@ -10,6 +10,7 @@ def seed():
         
         # GARANTIA SÊNIOR: Cria as tabelas no PostgreSQL do Render
         try:
+            db.drop_all() # Isso apaga as tabelas antigas (limite 128)
             db.create_all()
             print("✅ Banco de Dados: Tabelas verificadas/criadas.")
         except Exception as e:
