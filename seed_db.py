@@ -1,10 +1,9 @@
 import os
 from app import create_app, db
-from app.models import User, Category, Supplier, Product
-
+from app.models import User, Category, Supplier,Product
 # Define o ambiente
 env = os.environ.get('FLASK_CONFIG') or 'production'
-app = create_app(env)
+app = create_app()
 
 def seed():
     with app.app_context():
