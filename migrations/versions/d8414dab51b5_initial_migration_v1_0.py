@@ -1,8 +1,8 @@
-"""Recriando banco com logo
+"""Initial migration v1.0
 
-Revision ID: 6658f8e4d123
+Revision ID: d8414dab51b5
 Revises: 
-Create Date: 2026-01-08 17:55:30.640431
+Create Date: 2026-01-16 20:53:20.570929
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6658f8e4d123'
+revision = 'd8414dab51b5'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -41,7 +41,7 @@ def upgrade():
     op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=64), nullable=False),
-    sa.Column('password_hash', sa.String(length=128), nullable=True),
+    sa.Column('password_hash', sa.String(length=256), nullable=True),
     sa.Column('role', sa.String(length=20), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('username')

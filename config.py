@@ -25,4 +25,4 @@ class Config:
         _db_url = _db_url.replace("postgres://", "postgresql://", 1)
     
     # Define a URI final (Nuvem ou SQLite local)
-    SQLALCHEMY_DATABASE_URI = _db_url or 'sqlite:///' + os.path.join(basedir, 'stock.db')
+    SQLALCHEMY_DATABASE_URI = _db_url or 'sqlite:///' + os.path.join(basedir, 'instance', 'stock.db')
