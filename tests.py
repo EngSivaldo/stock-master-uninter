@@ -24,20 +24,33 @@ class StockMasterAdvancedTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def create_base_data(self):
-        """Cria dados iniciais para os testes"""
-        # Admin
-        admin = User(username='admin', role='admin')
-        admin.set_password('admin123')
+        """Cria dados iniciais de forma segura para os testes"""
+        # Limpa qualquer transação pendente que possa causar erro de UNIQUE
+        db.session.rollback()
+
+        # Verifica se o Admin já existe antes de criar
+        admin = User.query.filter_by(username='admin').first()
+        if not admin:
+            admin = User(username='admin', role='admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
         
-        # Operador
-        operator = User(username='operador', role='operator')
-        operator.set_password('user123')
+        # Verifica se o Operador já existe
+        operator = User.query.filter_by(username='operador').first()
+        if not operator:
+            operator = User(username='operador', role='operator')
+            operator.set_password('user123')
+            db.session.add(operator)
         
-        # Dados Base
-        cat = Category(name='Geral')
-        sup = Supplier(name='Fornecedor Padrão', cnpj='00000000000100')
+        # Dados Base (Garante que não duplique categorias ou fornecedores)
+        if not Category.query.filter_by(name='Geral').first():
+            cat = Category(name='Geral')
+            db.session.add(cat)
+            
+        if not Supplier.query.filter_by(cnpj='00000000000100').first():
+            sup = Supplier(name='Fornecedor Padrão', cnpj='00000000000100')
+            db.session.add(sup)
         
-        db.session.add_all([admin, operator, cat, sup])
         db.session.commit()
 
     # --- TESTES UNITÁRIOS (Lógica) ---
@@ -111,7 +124,7 @@ class StockMasterAdvancedTestCase(unittest.TestCase):
         sup = Supplier.query.first()
         cat = Category.query.first()
 
-        # 2. Envia formulário para criar produto (Rota corrigida: /product/new)
+        # 2. Envia formulário para criar produto
         response = self.client.post('/product/new', data=dict(
             name='Produto Via Teste',
             sku='TESTEWEB',
@@ -123,10 +136,25 @@ class StockMasterAdvancedTestCase(unittest.TestCase):
             category_id=cat.id
         ), follow_redirects=True)
 
+        # DEBUG: Se o teste falhar, isso imprimirá o erro do HTML no terminal
+        if response.status_code != 200:
+            print(f"\nErro no Servidor: {response.status_code}")
+
         # 3. Verifica se salvou no banco
         prod = Product.query.filter_by(sku='TESTEWEB').first()
-        self.assertIsNotNone(prod)
+        
+        # Se prod for None, imprimimos a resposta para ver as mensagens de erro (Flash messages)
+        if prod is None:
+            print("\n--- RESPOSTA DO SERVIDOR EM CASO DE FALHA ---")
+            print(response.data.decode('utf-8')) 
+            print("--------------------------------------------")
+
+        self.assertIsNotNone(prod, "O produto não foi criado. Verifique se os nomes dos campos no formulário HTML batem com o teste.")
         self.assertEqual(prod.name, 'Produto Via Teste')
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
